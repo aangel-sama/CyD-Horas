@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -20,7 +20,15 @@ export default function RegisterPage() {
       return
     }
     setLoading(true)
-    const { error: err } = await supabase.auth.signUp({ email, password })
+    const { error: err } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // Le dice a Supabase que, una vez confirmado el email,
+        // redirija al usuario a /register/success
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/register/success`,
+      }
+    })
     setLoading(false)
     if (err) {
       setError(err.message)
@@ -46,10 +54,7 @@ export default function RegisterPage() {
           )}
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm text-gray-700 mb-1"
-              >
+              <label htmlFor="email" className="block text-sm text-gray-700 mb-1">
                 Email Address
               </label>
               <input
@@ -57,16 +62,14 @@ export default function RegisterPage() {
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="tucorreo@empresa.com"
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-700 text-black"
               />
             </div>
+
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm text-gray-700 mb-1"
-              >
+              <label htmlFor="password" className="block text-sm text-gray-700 mb-1">
                 Contraseña
               </label>
               <input
@@ -74,16 +77,14 @@ export default function RegisterPage() {
                 type="password"
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-700 text-black"
               />
             </div>
+
             <div>
-              <label
-                htmlFor="confirm"
-                className="block text-sm text-gray-700 mb-1"
-              >
+              <label htmlFor="confirm" className="block text-sm text-gray-700 mb-1">
                 Confirmar Contraseña
               </label>
               <input
@@ -91,11 +92,12 @@ export default function RegisterPage() {
                 type="password"
                 required
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
+                onChange={e => setConfirm(e.target.value)}
                 placeholder="••••••••"
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-700 text-black"
               />
             </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -104,12 +106,10 @@ export default function RegisterPage() {
               {loading ? 'Registrando...' : 'Registrarse'}
             </button>
           </form>
+
           <p className="mt-6 text-center text-sm text-gray-600">
             ¿Ya tienes cuenta?{' '}
-            <a
-              href="/login"
-              className="text-red-700 hover:underline font-medium"
-            >
+            <a href="/login" className="text-red-700 hover:underline font-medium">
               Inicia sesión
             </a>
           </p>
