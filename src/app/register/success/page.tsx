@@ -1,28 +1,11 @@
+// src/app/register/success/page.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { supabase } from '@/lib/supabaseClient'
 
 export default function RegisterSuccessPage() {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string|null>(null)
-
-  useEffect(() => {
-    // Esto lee el access_token del hash y lo guarda en localStorage
-    supabase.auth.getSessionFromUrl({ storeSession: true })
-      .then(({ error }) => {
-        if (error) setError(error.message)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }, [])
-
-  if (loading) return <div>Confirmando tu cuenta…</div>
-  if (error) return <div className="text-red-600">Error: {error}</div>
 
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-8 bg-white">
@@ -30,7 +13,13 @@ export default function RegisterSuccessPage() {
 
       <div className="w-full max-w-lg p-6 shadow-lg bg-white text-center">
         <div className="flex items-center justify-center mb-2 text-lg font-medium text-gray-900">
-          <Image src="/check.png" alt="Check" width={16} height={16} className="mr-2" />
+          <Image
+            src="/check.png"
+            alt="Check"
+            width={16}
+            height={16}
+            className="mr-2"
+          />
           ¡Éxito!
         </div>
         <div className="mb-5 text-sm text-gray-600">
