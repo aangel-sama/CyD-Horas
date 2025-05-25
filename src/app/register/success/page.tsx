@@ -12,9 +12,9 @@ export default function RegisterSuccessPage() {
 
   useEffect(() => {
     // Esto lee el access_token del hash y lo guarda en localStorage
-    supabase.auth.getSession()
-      .then((result: { data: any; error: { message: string } | null }) => {
-        if (result.error) setError(result.error.message)
+    supabase.auth.getSessionFromUrl({ storeSession: true })
+      .then(({ error }) => {
+        if (error) setError(error.message)
       })
       .finally(() => {
         setLoading(false)
