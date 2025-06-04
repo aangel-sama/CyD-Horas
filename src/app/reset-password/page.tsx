@@ -1,66 +1,90 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function ResetPasswordPage() {
-  const router = useRouter()
-  const [token, setToken] = useState<string | null>(null)
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
 
-  // Al montar el componente extraemos el access_token del hash de la URL
+  const [token, setToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // 1. Extraer access_token y refresh_token del hash de la URL al montarse
   useEffect(() => {
-    // location.hash viene con el formato "#access_token=…&..."
-    const hash = window.location.hash.replace(/^#/, '')
-    const params = new URLSearchParams(hash)
-    const t = params.get('access_token')
-    if (t) {
-      setToken(t)
+    const hash = window.location.hash.replace(/^#/, "");
+    const params = new URLSearchParams(hash);
+    const access_token = params.get("access_token");
+    const refresh_token = params.get("refresh_token");
+
+    if (access_token && refresh_token) {
+      setToken(access_token);
+      setRefreshToken(refresh_token);
     } else {
-      setError('Token de recuperación no encontrado en la URL.')
+      setError("No se encontró token válido para restablecer la contraseña.");
     }
-  }, [])
+  }, []);
 
+  // 2. Cuando se envía el formulario, primero establecemos la sesión y luego actualizamos la contraseña
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
-    if (!token) {
-      setError('No hay token válido para cambiar la contraseña.')
-      return
+    if (!token || !refreshToken) {
+      setError("El token de recuperación no es válido.");
+      return;
     }
 
     if (password !== confirm) {
-      setError('Las contraseñas no coinciden.')
-      return
+      setError("Las contraseñas no coinciden.");
+      return;
     }
 
-    setLoading(true)
-    // Llamada a Supabase para aplicar la nueva contraseña
-    const { error: err } = await supabase.auth.verifyOtp({
-      type: 'recovery',
-      token,
-      newPassword: password,
-    })
-    setLoading(false)
+    setLoading(true);
 
-    if (err) {
-      setError(err.message)
+    // 2.1. Llamamos a setSession para "logear" al usuario con ese token
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: token,
+      refresh_token: refreshToken,
+    });
+
+    if (sessionError) {
+      setLoading(false);
+      setError("No se pudo establecer la sesión: " + sessionError.message);
+      return;
+    }
+
+    // 2.2. Una vez establecida la sesión, actualizamos la contraseña
+    const { error: updateError } = await supabase.auth.updateUser({
+      password,
+    });
+
+    setLoading(false);
+
+    if (updateError) {
+      setError("Error al actualizar la contraseña: " + updateError.message);
     } else {
-      // Éxito: redirigimos al login
-      router.replace('/login')
+      // Contraseña cambiada con éxito: redirigimos a /login
+      router.replace("/login");
     }
-  }
+  };
 
-  // Estado de token no válido
+  // 3. Si hay error antes de tener token, mostramos mensaje
   if (error && !token) {
-    return <div className="p-4 text-red-600">Error: {error}</div>
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white p-6 rounded-lg shadow text-red-600">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
   }
 
+  // 4. Formulario de nueva contraseña
   return (
     <div className="flex min-h-screen bg-gray-50 items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
@@ -71,11 +95,7 @@ export default function ResetPasswordPage() {
           <h2 className="text-center text-xl font-bold mb-4 text-black">
             Cambia tu contraseña
           </h2>
-
-          {error && (
-            <p className="text-red-600 text-center mb-4">{error}</p>
-          )}
-
+          {error && <p className="text-red-600 text-center mb-4">{error}</p>}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
@@ -118,11 +138,11 @@ export default function ResetPasswordPage() {
               disabled={loading}
               className="w-full bg-red-700 hover:bg-red-800 text-white font-semibold py-3 rounded-lg transition"
             >
-              {loading ? 'Actualizando…' : 'Cambiar contraseña'}
+              {loading ? "Actualizando…" : "Cambiar contraseña"}
             </button>
           </form>
         </div>
       </div>
     </div>
-  )
+  );
 }
