@@ -24,3 +24,115 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* --- Custom Styles register --- */
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #f8f9fa;
+}
+
+.stat-card {
+  border-radius: 16px;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.input-hora {
+  transition: all 0.2s ease;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 8px;
+  width: 70px;
+  text-align: center;
+  font-weight: 500;
+  background-color: #ffffff;
+  color: #212121;
+}
+
+.input-hora:focus {
+  border-color: #802528;
+  box-shadow: 0 0 3px rgba(128, 37, 40, 0.1);
+  outline: none;
+}
+
+.table-header {
+  background: linear-gradient(135deg, #802528 0%, #9a2e31 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.table-row {
+  transition: all 0.2s ease;
+}
+
+.table-row:hover {
+  background-color: rgba(128, 37, 40, 0.02);
+}
+
+.total-badge {
+  background-color: rgba(128, 37, 40, 0.1);
+  color: #802528;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.total-badge-extra {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #802528 0%, #9a2e31 100%);
+  color: white;
+  padding: 10px 24px;
+  font-weight: 500;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(128, 37, 40, 0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(128, 37, 40, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(128, 37, 40, 0.2);
+}
+
+.btn-outline {
+  border: 2px solid #802528;
+  color: #802528;
+  background-color: white;
+  padding: 10px 24px;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background-color: rgba(128, 37, 40, 0.05);
+  transform: translateY(-2px);
+}
+
+.btn-outline:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(128, 37, 40, 0.1);
+}
+
+
