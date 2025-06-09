@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
-import Sidebar from '@/components/Sidebar'
+import Sidebar from '../components/Sidebar'
 import { supabase } from '@/lib/supabaseClient'
 
 dayjs.extend(isoWeek)
