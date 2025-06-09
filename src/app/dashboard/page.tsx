@@ -9,11 +9,8 @@ import { supabase } from '@/lib/supabaseClient'
 
 dayjs.extend(isoWeek)
 
-// Definimos los días como tipo literal
 const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'] as const
-type Dia = typeof dias[number]
 
-// Tipos según tu tabla en Supabase
 interface Assignment {
   project_id: string
   projects: { name: string }
@@ -29,7 +26,7 @@ export default function DashboardPage() {
   const [entries, setEntries] = useState<Record<string, Record<string, number>>>({})
   const [loading, setLoading] = useState(true)
 
-  // 1) Fechas de la semana (lunes a viernes)
+  // calculamos lunes–viernes de la semana
   const monday = dayjs().startOf('isoWeek')
   const weekDates = dias.map((_, i) =>
     monday.add(i, 'day').format('YYYY-MM-DD')
@@ -37,15 +34,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      // 2) Sesión
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
       if (!session) {
         window.location.href = '/login'
         return
       }
       const userId = session.user.id
 
-      // 3) Fetch asignaciones
+      // 1) fetch asignaciones
       const { data: assignments, error: err1 } = await supabase
         .from<Assignment>('project_assignments')
         .select('project_id, projects(name)')
@@ -58,11 +56,11 @@ export default function DashboardPage() {
 
       const proys = assignments.map(a => ({
         id: a.project_id,
-        name: a.projects.name
+        name: a.projects.name,
       }))
       setProjects(proys)
 
-      // 4) Fetch entradas de esta semana
+      // 2) fetch time_entries de la semana
       const { data: times, error: err2 } = await supabase
         .from<TimeEntry>('time_entries')
         .select('project_id, entry_date, hours')
@@ -71,7 +69,7 @@ export default function DashboardPage() {
 
       if (err2) console.error('Error cargando time_entries', err2)
 
-      // 5) Inicializar estado de entradas (0 si no existe)
+      // 3) inicializar entradas a 0 si faltan
       const init: Record<string, Record<string, number>> = {}
       proys.forEach(p => {
         init[p.id] = {}
@@ -83,36 +81,31 @@ export default function DashboardPage() {
       setEntries(init)
       setLoading(false)
     }
-
     load()
   }, [weekDates])
 
-  // 6) Límite de horas según día
+  // límite de horas: 9h (lun-jue), 6.5h (vie)
   const limite = (date: string) =>
     dayjs(date).isoWeekday() === 5 ? 6.5 : 9
 
-  // 7) Handler de cambio con upsert
   const handleChange = async (projId: string, date: string, val: number) => {
-    // Validamos suma de otras entradas
     const sumaOtras = projects.reduce(
       (sum, p) => (p.id === projId ? sum : sum + (entries[p.id]?.[date] || 0)),
       0
     )
     if (sumaOtras + val > limite(date)) {
-      alert(
-        `No puedes superar ${limite(date)}h en ${dayjs(date).format('dddd')}`
-      )
+      alert(`No puedes superar ${limite(date)}h en ${dayjs(date).format('dddd')}`)
       return
     }
 
-    // Actualizar estado local
     setEntries(e => ({
       ...e,
-      [projId]: { ...e[projId], [date]: val }
+      [projId]: { ...e[projId], [date]: val },
     }))
 
-    // Guardar en Supabase
-    const { data: { session } } = await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
     if (!session) return
     const userId = session.user.id
 
@@ -122,7 +115,7 @@ export default function DashboardPage() {
         user_id: userId,
         project_id: projId,
         entry_date: date,
-        hours: val
+        hours: val,
       })
     if (error) console.error('Error upsert time_entries', error)
   }
@@ -131,13 +124,11 @@ export default function DashboardPage() {
     return <div className="p-8">⏳ Cargando Dashboard…</div>
   }
 
-  // 8) Cálculo de totales
+  // totales
   const totalProyecto = (projId: string) =>
     weekDates.reduce((sum, d) => sum + (entries[projId]?.[d] || 0), 0)
-
   const totalDia = (d: string) =>
     projects.reduce((sum, p) => sum + (entries[p.id]?.[d] || 0), 0)
-
   const totalGeneral = () =>
     projects.reduce((sum, p) => sum + totalProyecto(p.id), 0)
 
@@ -170,7 +161,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Tabla de entrada */}
+        {/* Tabla */}
         <div className="overflow-auto shadow rounded bg-white">
           <table className="min-w-full">
             <thead className="table-header">
