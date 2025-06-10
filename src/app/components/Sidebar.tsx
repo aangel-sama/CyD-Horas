@@ -1,15 +1,13 @@
-// src/components/Sidebar.tsx
 'use client'
-
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function Sidebar() {
-  const router = useRouter();
+  const router = useRouter()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+    await supabase.auth.signOut()
+    router.push('/login')
   }
 
   return (
@@ -22,15 +20,11 @@ export default function Sidebar() {
           >
             Dashboard
           </button>
-          {/* Añade más enlaces aquí */}
         </div>
-        <button
-          onClick={handleLogout}
-          className="text-red-600 hover:underline"
-        >
+        <button onClick={handleLogout} className="text-red-600 hover:underline">
           Cerrar sesión
         </button>
       </nav>
     </aside>
-  );
+  )
 }
