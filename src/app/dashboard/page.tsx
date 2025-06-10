@@ -148,7 +148,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex bg-[#f8f9fa]">
-      <Sidebar />
+      
 
       <main className="flex-1 p-8">
         <h1 className="text-3xl font-bold text-[#212121] mb-6">
