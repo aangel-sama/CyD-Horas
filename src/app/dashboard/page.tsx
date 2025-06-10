@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
-import Sidebar from '../components/Sidebar'
 import { supabase } from '@/lib/supabaseClient'
 import type { PostgrestResponse } from '@supabase/supabase-js'
 
@@ -27,7 +26,6 @@ export default function DashboardPage() {
   const [entries, setEntries] = useState<Record<string, Record<string, number>>>({})
   const [loading, setLoading] = useState(true)
 
-  // 1) Fechas de la semana actual (lun–vie)
   const monday = dayjs().startOf('isoWeek')
   const weekDates = dias.map((_, i) =>
     monday.add(i, 'day').format('YYYY-MM-DD')
@@ -35,7 +33,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      // 2) Session
       const {
         data: { session },
       } = await supabase.auth.getSession()
@@ -45,7 +42,7 @@ export default function DashboardPage() {
       }
       const userId = session.user.id
 
-      // 3) Fetch assignments
+      // Fetch assignments
       const { data: rawAssign, error: err1 }: PostgrestResponse<Assignment> =
         await supabase
           .from('project_assignments')
@@ -63,7 +60,7 @@ export default function DashboardPage() {
       }))
       setProjects(proys)
 
-      // 4) Fetch time_entries
+      // Fetch time entries
       const { data: rawTimes, error: err2 }: PostgrestResponse<TimeEntry> =
         await supabase
           .from('time_entries')
@@ -71,74 +68,59 @@ export default function DashboardPage() {
           .eq('user_id', userId)
           .in('entry_date', weekDates)
 
-      if (err2) {
-        console.error('Error cargando time_entries', err2)
-      }
+      if (err2) console.error('Error cargando time_entries', err2)
       const times = rawTimes || []
 
-      // 5) Inicializar estado con 0 si falta
+      // Initialize entries
       const init: Record<string, Record<string, number>> = {}
       proys.forEach(p => {
         init[p.id] = {}
         weekDates.forEach(d => {
-          const found = times.find(
-            t => t.project_id === p.id && t.entry_date === d
-          )
+          const found = times.find(t => t.project_id === p.id && t.entry_date === d)
           init[p.id][d] = found?.hours ?? 0
         })
       })
       setEntries(init)
       setLoading(false)
     }
-
     load()
   }, [weekDates])
 
-  // 6) Límite de horas: 9h (L-J) o 6.5h (V)
-  const limite = (date: string) =>
-    dayjs(date).isoWeekday() === 5 ? 6.5 : 9
+  const limite = (date: string) => (dayjs(date).isoWeekday() === 5 ? 6.5 : 9)
 
-  // 7) Handler para cambiar y hacer upsert
   const handleChange = async (projId: string, date: string, val: number) => {
     const sumaOtras = projects.reduce(
       (sum, p) => (p.id === projId ? sum : sum + (entries[p.id]?.[date] || 0)),
       0
     )
     if (sumaOtras + val > limite(date)) {
-      alert(
-        `No puedes superar ${limite(date)}h en ${dayjs(date).format('dddd')}`
-      )
+      alert(`No puedes superar ${limite(date)}h en ${dayjs(date).format('dddd')}`)
       return
     }
-
-    // Actualiza UI
     setEntries(e => ({
       ...e,
       [projId]: { ...e[projId], [date]: val },
     }))
 
-    // Inserta/actualiza en Supabase
     const {
       data: { session },
     } = await supabase.auth.getSession()
     if (!session) return
     const userId = session.user.id
 
-    const { error } = await supabase.from('time_entries').upsert({
-      user_id: userId,
-      project_id: projId,
-      entry_date: date,
-      hours: val,
-    })
-
+    const { error } = await supabase
+      .from('time_entries')
+      .upsert({
+        user_id: userId,
+        project_id: projId,
+        entry_date: date,
+        hours: val,
+      })
     if (error) console.error('Error upsert time_entries', error)
   }
 
-  if (loading) {
-    return <div className="p-8">⏳ Cargando Dashboard…</div>
-  }
+  if (loading) return <div>⏳ Cargando Dashboard…</div>
 
-  // Totales
   const totalProyecto = (projId: string) =>
     weekDates.reduce((sum, d) => sum + (entries[projId]?.[d] || 0), 0)
   const totalDia = (d: string) =>
@@ -147,92 +129,88 @@ export default function DashboardPage() {
     projects.reduce((sum, p) => sum + totalProyecto(p.id), 0)
 
   return (
-    <div className="min-h-screen flex bg-[#f8f9fa]">
-      
+    <>
+      <h1 className="text-3xl font-bold text-[#212121] mb-6">
+        Registro de Horas (Semana {monday.format('WW')})
+      </h1>
 
-      <main className="flex-1 p-8">
-        <h1 className="text-3xl font-bold text-[#212121] mb-6">
-          Registro de Horas (Semana {monday.format('WW')})
-        </h1>
-
-        {/* Contadores */}
-        <div className="grid grid-cols-3 gap-6 mb-8">
-          <div className="stat-card">
-            <p className="text-sm text-[#76787A]">Total esta semana</p>
-            <p className="text-3xl font-bold text-[#802528]">
-              {totalGeneral().toFixed(1)}
-            </p>
-          </div>
-          <div className="stat-card">
-            <p className="text-sm text-[#76787A]">Proyectos activos</p>
-            <p className="text-3xl font-bold text-[#802528]">
-              {projects.length}
-            </p>
-          </div>
-          <div className="stat-card">
-            <p className="text-sm text-[#76787A]">Estado</p>
-            <p className="total-badge-extra">⏳ Sin enviar</p>
-          </div>
+      {/* Contadores */}
+      <div className="grid grid-cols-3 gap-6 mb-8">
+        <div className="stat-card">
+          <p className="text-sm text-[#76787A]">Total esta semana</p>
+          <p className="text-3xl font-bold text-[#802528]">
+            {totalGeneral().toFixed(1)}
+          </p>
         </div>
+        <div className="stat-card">
+          <p className="text-sm text-[#76787A]">Proyectos activos</p>
+          <p className="text-3xl font-bold text-[#802528]">
+            {projects.length}
+          </p>
+        </div>
+        <div className="stat-card">
+          <p className="text-sm text-[#76787A]">Estado</p>
+          <p className="total-badge-extra">⏳ Sin enviar</p>
+        </div>
+      </div>
 
-        {/* Tabla de horas */}
-        <div className="overflow-auto shadow rounded bg-white">
-          <table className="min-w-full">
-            <thead className="table-header">
-              <tr>
-                <th className="p-4">Proyecto</th>
-                {weekDates.map(d => (
-                  <th key={d} className="p-4 text-center">
-                    {dayjs(d).format('dd DD')}
-                  </th>
-                ))}
-                <th className="p-4 text-center">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map(p => (
-                <tr key={p.id} className="table-row border-b">
-                  <td className="p-4 font-medium text-[#374151]">{p.name}</td>
-                  {weekDates.map(d => (
-                    <td key={d} className="p-2 text-center">
-                      <input
-                        type="number"
-                        min={0}
-                        step={0.5}
-                        value={entries[p.id]?.[d] ?? 0}
-                        onChange={e =>
-                          handleChange(p.id, d, parseFloat(e.target.value) || 0)
-                        }
-                        className="input-hora"
-                      />
-                    </td>
-                  ))}
-                  <td className="p-4 text-center">
-                    <span className="total-badge">
-                      {totalProyecto(p.id).toFixed(1)}
-                    </span>
-                  </td>
-                </tr>
+      {/* Tabla de horas */}
+      <div className="overflow-auto shadow rounded bg-white">
+        <table className="min-w-full">
+          <thead className="table-header">
+            <tr>
+              <th className="p-4">Proyecto</th>
+              {weekDates.map(d => (
+                <th key={d} className="p-4 text-center">
+                  {dayjs(d).format('dd DD')}
+                </th>
               ))}
-            </tbody>
-            <tfoot>
-              <tr className="bg-white text-[#212121] font-semibold">
-                <td className="p-4 text-center">Total diario</td>
+              <th className="p-4 text-center">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.map(p => (
+              <tr key={p.id} className="table-row border-b">
+                <td className="p-4 font-medium text-[#374151]">{p.name}</td>
                 {weekDates.map(d => (
-                  <td key={d} className="p-4 text-center text-[#802528]">
-                    {totalDia(d).toFixed(1)}
+                  <td key={d} className="p-2 text-center">
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.5}
+                      value={entries[p.id]?.[d] ?? ''}
+                      onChange={e =>
+                        handleChange(p.id, d, parseFloat(e.target.value) || 0)
+                      }
+                      className="input-hora"
+                    />
                   </td>
                 ))}
                 <td className="p-4 text-center">
                   <span className="total-badge">
-                    {totalGeneral().toFixed(1)}
+                    {totalProyecto(p.id).toFixed(1)}
                   </span>
                 </td>
               </tr>
-            </tfoot>
-          </table>
-        </div>
-      </main>
-    </div>
-)
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="bg-white text-[#212121] font-semibold">
+              <td className="p-4 text-center">Total diario</td>
+              {weekDates.map(d => (
+                <td key={d} className="p-4 text-center text-[#802528]">
+                  {totalDia(d).toFixed(1)}
+                </td>
+              ))}
+              <td className="p-4 text-center">
+                <span className="total-badge">
+                  {totalGeneral().toFixed(1)}
+                </span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </>
+  )
 }
