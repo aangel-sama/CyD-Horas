@@ -11,6 +11,7 @@ dayjs.extend(isoWeek)
 
 const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'] as const
 
+// Tipos según tu esquema
 interface Assignment {
   project_id: string
   projects: { name: string }
@@ -26,7 +27,7 @@ export default function DashboardPage() {
   const [entries, setEntries] = useState<Record<string, Record<string, number>>>({})
   const [loading, setLoading] = useState(true)
 
-  // calculamos lunes–viernes de la semana
+  // 1) Cálculo de fechas lunes–viernes de la semana actual
   const monday = dayjs().startOf('isoWeek')
   const weekDates = dias.map((_, i) =>
     monday.add(i, 'day').format('YYYY-MM-DD')
@@ -34,6 +35,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
+      // 2) Obtener sesión
       const {
         data: { session },
       } = await supabase.auth.getSession()
@@ -43,52 +45,60 @@ export default function DashboardPage() {
       }
       const userId = session.user.id
 
-      // 1) fetch asignaciones
-      const { data: assignments, error: err1 } = await supabase
-        .from<Assignment>('project_assignments')
+      // 3) Traer asignaciones (sin genéricos en from)
+      const { data: rawAssign, error: err1 } = await supabase
+        .from('project_assignments')
         .select('project_id, projects(name)')
         .eq('user_id', userId)
 
-      if (err1 || !assignments) {
+      if (err1 || !rawAssign) {
         console.error('Error cargando asignaciones', err1)
         return
       }
-
+      // Ajustar para que 'projects' sea un objeto, no un array
+      const assignments = (rawAssign as any[]).map(a => ({
+        project_id: a.project_id,
+        projects: Array.isArray(a.projects) ? a.projects[0] : a.projects,
+      })) as Assignment[]
       const proys = assignments.map(a => ({
         id: a.project_id,
         name: a.projects.name,
       }))
       setProjects(proys)
 
-      // 2) fetch time_entries de la semana
-      const { data: times, error: err2 } = await supabase
-        .from<TimeEntry>('time_entries')
+      // 4) Traer time_entries de esta semana
+      const { data: rawTimes, error: err2 } = await supabase
+        .from('time_entries')
         .select('project_id, entry_date, hours')
         .eq('user_id', userId)
         .in('entry_date', weekDates)
 
       if (err2) console.error('Error cargando time_entries', err2)
+      const times = (rawTimes as any[]) as TimeEntry[]
 
-      // 3) inicializar entradas a 0 si faltan
+      // 5) Inicializar estado con 0 si falta
       const init: Record<string, Record<string, number>> = {}
       proys.forEach(p => {
         init[p.id] = {}
         weekDates.forEach(d => {
-          const found = times?.find(t => t.project_id === p.id && t.entry_date === d)
+          const found = times.find(t => t.project_id === p.id && t.entry_date === d)
           init[p.id][d] = found?.hours ?? 0
         })
       })
       setEntries(init)
       setLoading(false)
     }
+
     load()
   }, [weekDates])
 
-  // límite de horas: 9h (lun-jue), 6.5h (vie)
+  // 6) Límite de horas: 9h (L-J) o 6.5h (V)
   const limite = (date: string) =>
     dayjs(date).isoWeekday() === 5 ? 6.5 : 9
 
+  // 7) Manejar cambio y upsert
   const handleChange = async (projId: string, date: string, val: number) => {
+    // validación de suma diaria
     const sumaOtras = projects.reduce(
       (sum, p) => (p.id === projId ? sum : sum + (entries[p.id]?.[date] || 0)),
       0
@@ -98,11 +108,13 @@ export default function DashboardPage() {
       return
     }
 
+    // actualizar estado local
     setEntries(e => ({
       ...e,
       [projId]: { ...e[projId], [date]: val },
     }))
 
+    // guardar en Supabase
     const {
       data: { session },
     } = await supabase.auth.getSession()
@@ -124,7 +136,7 @@ export default function DashboardPage() {
     return <div className="p-8">⏳ Cargando Dashboard…</div>
   }
 
-  // totales
+  // 8) Cálculo de totales
   const totalProyecto = (projId: string) =>
     weekDates.reduce((sum, d) => sum + (entries[projId]?.[d] || 0), 0)
   const totalDia = (d: string) =>
@@ -161,7 +173,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Tabla */}
+        {/* Tabla de horas */}
         <div className="overflow-auto shadow rounded bg-white">
           <table className="min-w-full">
             <thead className="table-header">
@@ -187,7 +199,11 @@ export default function DashboardPage() {
                         step={0.5}
                         value={entries[p.id]?.[d] ?? ''}
                         onChange={e =>
-                          handleChange(p.id, d, parseFloat(e.target.value) || 0)
+                          handleChange(
+                            p.id,
+                            d,
+                            parseFloat(e.target.value) || 0
+                          )
                         }
                         className="input-hora"
                       />
