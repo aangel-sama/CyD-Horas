@@ -1,6 +1,4 @@
 // src/components/Sidebar.tsx
-
-/*
 'use client'
 
 import { useRouter } from 'next/navigation';
@@ -24,9 +22,7 @@ export default function Sidebar() {
           >
             Dashboard
           </button>
-          
-
-        
+          {/* Añade más enlaces aquí */}
         </div>
         <button
           onClick={handleLogout}
@@ -38,6 +34,3 @@ export default function Sidebar() {
     </aside>
   );
 }
-
-
-*/
