@@ -243,9 +243,7 @@ export default function RegistroHoras() {
 
   return (
     <div className="flex bg-[#f8f9fa]">
-      <Sidebar user={{
-              email: ''
-          }} />
+      <Sidebar />
       <main className="ml-64 flex-1 px-10 py-8 overflow-y-auto max-h-screen">
         <h1 className="text-3xl font-bold text-[#212121] mb-6">Registro de Horas</h1>
 
