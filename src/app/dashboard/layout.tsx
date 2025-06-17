@@ -10,7 +10,9 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex min-h-screen bg-[#f8f9fa]">
-      <Sidebar />
+      <Sidebar user={{
+        email: ''
+      }} />
       <main className="flex-1 p-8">{children}</main>
     </div>
   )
