@@ -2,27 +2,27 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
-export default function Sidebar() {
+interface SidebarProps {
+  user: { email: string };
+}
+
+export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Suponiendo que el email está guardado en localStorage bajo la clave 'userEmail'
-    const email = localStorage.getItem('userEmail');
-    setUserEmail(email);
-  }, []);
 
   const items = [
     { href: '/registro-horas', icon: '/Resultados-b.svg', label: 'Registro de horas' },
     { href: '/dias-libres', icon: '/Schedule-b.svg', label: 'Registro de días libres' },
   ];
 
+  // Implementación básica de cerrar sesión
   const handleLogout = () => {
+    // Aquí puedes limpiar el almacenamiento local, cookies, etc.
+    // Por ejemplo:
     // localStorage.removeItem('token');
-    // localStorage.removeItem('userEmail');
+    // Redirige al login
     router.push('/login');
   };
 
@@ -50,7 +50,8 @@ export default function Sidebar() {
           })}
         </nav>
       </div>
-      <div>
+      <div className="footer">
+        <p>{user.email}</p> {/* Muestra el correo del usuario */}
         <button
           className="flex items-center gap-3 p-3 hover:bg-white/5 rounded w-full text-left"
           onClick={handleLogout}
@@ -58,11 +59,6 @@ export default function Sidebar() {
           <img src="/exit-b.svg" alt="Cerrar sesión" className="w-5 h-5" />
           <span>Cerrar sesión</span>
         </button>
-        {userEmail && (
-          <div className="mt-4 text-xs text-white/70 text-center truncate" title={userEmail}>
-            {userEmail}
-          </div>
-        )}
       </div>
     </aside>
   );
