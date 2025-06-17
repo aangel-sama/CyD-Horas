@@ -1,30 +1,58 @@
-'use client'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import React from 'react';
 
 export default function Sidebar() {
-  const router = useRouter()
+  const pathname = usePathname();
+  const router = useRouter();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+  const items = [
+    { href: '/registro-horas', icon: '/Resultados-b.svg', label: 'Registro de horas' },
+    { href: '/dias-libres', icon: '/Schedule-b.svg', label: 'Registro de días libres' },
+  ];
+
+  // Implementación básica de cerrar sesión
+  const handleLogout = () => {
+    // Aquí puedes limpiar el almacenamiento local, cookies, etc.
+    // Por ejemplo:
+    // localStorage.removeItem('token');
+    // Redirige al login
+    router.push('/login');
+  };
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 h-screen p-4">
-      <nav className="flex flex-col h-full justify-between">
-        <div>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="block mb-4 text-lg font-medium text-gray-800 hover:text-red-700"
-          >
-            Dashboard
-          </button>
+    <aside className="fixed top-0 left-0 h-screen w-64 bg-[#802528] text-white flex flex-col justify-between p-4 z-50">
+      <div>
+        <div className="flex justify-center mb-8">
+          <img src="/Logo_CyD_blanco.svg" alt="CyD Ingeniería" className="h-14" />
         </div>
-        <button onClick={handleLogout} className="text-red-600 hover:underline">
-          Cerrar sesión
-        </button>
-      </nav>
+        <nav className="space-y-4">
+          {items.map(({ href, icon, label }) => {
+            const active = pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 p-3 rounded w-full text-left transition-colors ${
+                  active ? 'bg-white/20' : 'hover:bg-white/10'
+                }`}
+              >
+                <img src={icon} alt={label} className="w-5 h-5" />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+      <button
+        className="flex items-center gap-3 p-3 hover:bg-white/5 rounded w-full text-left"
+        onClick={handleLogout}
+      >
+        <img src="/exit-b.svg" alt="Cerrar sesión" className="w-5 h-5" />
+        <span>Cerrar sesión</span>
+      </button>
     </aside>
-  )
+  );
 }

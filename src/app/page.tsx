@@ -7,11 +7,13 @@ export default function Home() {
   const router = useRouter()
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) router.replace('/login')
+      if (!session) {
+        router.replace('/login')
+      } else {
+        router.replace('/registro-horas')
+      }
     })
   }, [router])
 
-  return (
-    <div>¡Bienvenido! Aquí irá tu dashboard.</div>
-  )
+  return null
 }

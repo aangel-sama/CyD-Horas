@@ -9,12 +9,20 @@ export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)      // <-- Estado añadido
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
+
+    // Validar dominio de correo
+    if (!email.endsWith('@cydingenieria.com')) {
+      setError('Solo se permite el inicio de sesión con correos @cydingenieria.com')
+      return
+    }
+
     setLoading(true)
     const { error: err } = await supabase.auth.signInWithPassword({
       email,
@@ -24,7 +32,7 @@ export default function LoginPage() {
     if (err) {
       setError(err.message)
     } else {
-      router.replace('/dashboard')
+      router.replace('/registro-horas')
     }
   }
 

@@ -15,6 +15,10 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.endsWith("@cydingenieria.com")) {
+      setError("Solo se permiten correos @cydingenieria.com");
+      return;
+    }
     if (password !== confirm) {
       setError("Las contraseñas no coinciden");
       return;
@@ -24,8 +28,6 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        // Le dice a Supabase que, una vez confirmado el email,
-        // redirija al usuario a /register/success
         emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/register/success`,
       },
     });
@@ -64,7 +66,7 @@ export default function RegisterPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="tucorreo@empresa.com"
+                placeholder="tucorreo@cydingenieria.com"
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-700 text-black"
               />
             </div>
