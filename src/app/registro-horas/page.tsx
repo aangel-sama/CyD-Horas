@@ -37,7 +37,7 @@ export default function RegistroHoras() {
   const [fechasSemana, setFechasSemana] = useState<string[]>([]);
 
   // Texto amigable que se muestra como rango de la semana
-  const [textoSemana, setTextoSemana] = useState('');
+  const [, setTextoSemana] = useState('');
 
   // Días de la semana en orden
   const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
@@ -49,7 +49,7 @@ export default function RegistroHoras() {
   // Cuando se agregue la autenticación, se debe usar el correo del usuario autenticado
   useEffect(() => {
   const obtenerUsuario = async () => {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (user?.email) {
       setCorreo(user.email);
     } else {
