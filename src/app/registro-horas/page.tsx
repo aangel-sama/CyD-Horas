@@ -46,31 +46,23 @@ export default function RegistroHoras() {
   // const correo = 'malvear@cydingenieria.com'; //
   const [correo, setCorreo] = useState<string | null>(null);
 
-  // Cuando se agregue la autenticación, se debe usar el correo del usuario autenticado
-  useEffect(() => {
-  const obtenerUsuario = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.email) {
-      setCorreo(user.email);
-    } else {
-      alert('No hay sesión activa. Redirigiendo...');
-      // Aquí puedes redirigir si usas router
-    }
-  };
 
-      obtenerUsuario();
-    }, []);
 
   /* ───────────────────────────────
      Efecto de inicialización
   ─────────────────────────────── */
   useEffect(() => {
     // Cuando se agregue la autenticación, se debe usar el correo del usuario autenticado
-    if (!correo) return;
-
     const init = async () => {
       // 1. Obtener proyectos del usuario
-      const codigos = await obtenerProyectos(correo);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        setCorreo(user.email);
+      } else {
+        alert('No hay sesión activa. Redirigiendo...');
+        // Aquí puedes redirigir si usas router
+      } 
+      const codigos = await obtenerProyectos(user?.email || '');
       setProyectos(codigos);
 
       // 2. Inicializar matriz de horas en cero
@@ -153,7 +145,7 @@ export default function RegistroHoras() {
       setTextoSemana(formatoSemana(fechasMostrar[0]));
 
       // 6. Cargar horas registradas (si existen)
-      const registrosSemana = await obtenerRegistros(correo, fechasMostrar);
+      const registrosSemana = await obtenerRegistros(user?.email || '', fechasMostrar);
 
       if (registrosSemana.length > 0) {
         const hNew = { ...h0 };
@@ -214,9 +206,15 @@ export default function RegistroHoras() {
 
         const fecha = fechasSemana[i];
         const horasDia = horas[p][dias[i]] || 0;
-
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.email) {
+          setCorreo(user.email);
+        } else {
+          alert('No hay sesión activa. Redirigiendo...');
+          // Aquí puedes redirigir si usas router
+        } 
         if (correo) {
-          await insertarOActualizarRegistro(correo, p, fecha, horasDia, estado);
+          await insertarOActualizarRegistro(user?.email || '', p, fecha, horasDia, estado);
         }
       }
     }
