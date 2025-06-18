@@ -29,9 +29,7 @@ export default function Sidebar() {
       } else {
         setEmail(session.user.email ?? null)
       }
-    }).finally(() => {
-      setLoading(false)
-    })
+    }).finally(() => setLoading(false))
   }, [pathname, router])
 
   if (loading) return null
@@ -56,9 +54,12 @@ export default function Sidebar() {
         </div>
 
         {email && (
-          <p className="mb-6 px-3 text-sm text-white/80">
+          <Link
+            href="/profile"
+            className="mb-6 px-3 text-sm text-white/80 block hover:underline cursor-pointer"
+          >
             {email}
-          </p>
+          </Link>
         )}
 
         <nav className="space-y-2">

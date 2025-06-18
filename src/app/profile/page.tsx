@@ -1,5 +1,6 @@
 'use client'
 
+import Sidebar from '../components/Sidebar'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
@@ -48,67 +49,73 @@ export default function ProfilePage() {
     }
   }
 
+  // Mientras carga, mostramos el sidebar + loader
   if (loading) {
-    return <div className="p-8">⏳ Cargando perfil…</div>
+    return (
+      <div className="flex min-h-screen bg-[#f8f9fa]">
+        <Sidebar />
+        <main className="flex-1 p-8">
+          <div className="text-center text-lg">⏳ Cargando perfil…</div>
+        </main>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen flex justify-center items-start bg-[#f8f9fa] p-8">
-      <div className="w-full max-w-md bg-white p-6 shadow rounded-lg">
-        <h1 className="text-2xl font-bold mb-4 text-[#212121]">
-          Perfil de usuario
-        </h1>
-        <p className="mb-6 text-gray-700">
-          <span className="font-medium">Email:</span> {email}
-        </p>
+    <div className="flex min-h-screen bg-[#f8f9fa]">
+      <Sidebar />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error   && <p className="text-red-600">{error}</p>}
-          {success && <p className="text-green-600">{success}</p>}
+      <main className="flex-1 flex justify-center items-start p-8">
+        <div className="w-full max-w-md bg-white p-6 shadow rounded-lg">
+          <h1 className="text-2xl font-bold mb-4 text-[#212121]">
+            Perfil de usuario
+          </h1>
+          <p className="mb-6 text-gray-700">
+            <span className="font-medium">Email:</span> {email}
+          </p>
 
-          <div>
-            <label
-              htmlFor="newPassword"
-              className="block text-sm text-gray-600 mb-1"
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error   && <p className="text-red-600">{error}</p>}
+            {success && <p className="text-green-600">{success}</p>}
+
+            <div>
+              <label htmlFor="newPassword" className="block text-sm text-gray-600 mb-1">
+                Nueva contraseña
+              </label>
+              <input
+                id="newPassword"
+                type="password"
+                required
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-700 text-black"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm text-gray-600 mb-1">
+                Confirmar contraseña
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-700 text-black"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full"
             >
-              Nueva contraseña
-            </label>
-            <input
-              id="newPassword"
-              type="password"
-              required
-              value={newPassword}
-              onChange={e => setNewPassword(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-700 text-black"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm text-gray-600 mb-1"
-            >
-              Confirmar contraseña
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-700 text-black"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full"
-          >
-            {loading ? 'Actualizando…' : 'Cambiar contraseña'}
-          </button>
-        </form>
-      </div>
+              {loading ? 'Actualizando…' : 'Cambiar contraseña'}
+            </button>
+          </form>
+        </div>
+      </main>
     </div>
   )
 }
