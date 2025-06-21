@@ -1,4 +1,6 @@
 import { supabase } from '../supabaseClient';
+import { obtenerFechasHabilesSemana } from '../utils/fechas';
+
 
 /* ──────────────────────────────────────
    SERVICIO: Gestión de registros de horas

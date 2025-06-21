@@ -38,7 +38,7 @@ export default function Sidebar() {
 
   const items = [
     { href: '/registro-horas', icon: '/Resultados-b.svg', label: 'Registro de horas' },
-    { href: '/dias-libres',   icon: '/Schedule-b.svg',   label: 'Registro de días libres' },
+    { href: '/registro-dias-libres',   icon: '/Schedule-b.svg',   label: 'Registro de días libres' },
   ]
 
   const handleLogout = async () => {

@@ -1,6 +1,7 @@
 'use client'; // Requiere modo cliente para poder manejar eventos como onChange
 
 import React from 'react';
+import { esFeriado } from '../lib/utils/feriados'; // Ajusta el path si es necesario
 
 // Definimos los props que este componente va a recibir desde el padre
 type TablaHorasProps = {
@@ -75,9 +76,11 @@ export default function TablaHoras({
                     // 3. Si es día futuro en semana actual
                     disabled={
                       bloquear ||
+                      (fechasSemana[idx] && !isNaN(new Date(fechasSemana[idx]).getTime()) && esFeriado(new Date(fechasSemana[idx]))) ||
                       (bloqueoSemanaAnterior && estadoEnvio === 'Enviado') ||
                       (!bloqueoSemanaAnterior && idx + 1 > (new Date().getDay() || 7))
                     }
+
                     // Al cambiar el valor, actualiza la celda correspondiente
                     onChange={(e) =>
                       handleHoraChange(proyecto, idx, parseFloat(e.target.value) || 0)
