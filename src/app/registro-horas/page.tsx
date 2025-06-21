@@ -1,18 +1,23 @@
 'use client';
  
 import { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../../components/Sidebar';
 import { supabase } from '../../lib/supabaseClient';
 
 // Componentes reutilizables
-import TablaHoras from '../components/TablaHoras';
-import ResumenSemana from '../components/ResumenSemana';
+import TablaHoras from '../../components/TablaHoras';
+import ResumenSemana from '../../components/ResumenSemana';
 
 // Utilidades para fechas (calcular semanas y formato)
 import { obtenerFechasSemana, formatoSemana, obtenerFechasHabilesSemana} from '../../lib/utils/fechas';
 
 // Funciones de servicio para Supabase
 import { obtenerProyectos, obtenerRegistros, insertarOActualizarRegistro } from './../../lib/service/registroService';
+
+
+// Días de la semana en orden
+const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+
 
 /* ──────────────────────────────────────────────────────────────────────────────
    Componente principal de la página: Registro de Horas
@@ -39,8 +44,7 @@ export default function RegistroHoras() {
   // Texto amigable que se muestra como rango de la semana
   const [, setTextoSemana] = useState('');
 
-  // Días de la semana en orden
-  const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+
 
   // Correo fijo para pruebas (esto debe cambiarse por el del usuario autenticado)
   // const correo = 'malvear@cydingenieria.com'; //
@@ -168,7 +172,7 @@ export default function RegistroHoras() {
     };
 
     init();
-  }, []);
+  }, [correo]);
 // Cuando se agregue la autenticación, se debe usar el correo del usuario autenticado
 //}, [correo]);
 

@@ -29,7 +29,16 @@ export async function registerVacation({
     diasPorSemana[lunesSemana].push({ fecha: dia, horas });
   });
 // 
-  const registros: any[] = [];
+  interface RegistroVacaciones {
+  correo: string
+  proyecto: string
+  fecha: string
+  horas: number
+  estado: string
+}
+
+  const registros: RegistroVacaciones[] = []
+
 
   const proyectoVacacion = motivo === 'Vacaciones' ? 'GIN-2 Vacaciones' : 'GIN-2 Licencias';
 

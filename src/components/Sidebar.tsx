@@ -5,6 +5,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import Image from 'next/image'
+
+// Rutas donde NO queremos mostrar el sidebar
+const publicPaths = ['/login', '/register', '/register/success', '/forgot-password', '/login/reset-password']
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -12,8 +16,7 @@ export default function Sidebar() {
   const [email, setEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Rutas donde NO queremos mostrar el sidebar
-  const publicPaths = ['/login', '/register', '/register/success', '/forgot-password', '/login/reset-password']
+  
 
   useEffect(() => {
     // Si estamos en una ruta pública, no cargamos nada
@@ -50,7 +53,7 @@ export default function Sidebar() {
     <aside className="fixed top-0 left-0 h-screen w-64 bg-[#802528] text-white flex flex-col justify-between p-4 z-50">
       <div>
         <div className="flex justify-center mb-8">
-          <img src="/Logo_CyD_blanco.svg" alt="CyD Ingeniería" className="h-14" />
+          <Image src="/Logo_CyD_blanco.svg" alt="CyD Ingeniería" width={56} height={56} className="h-14 w-auto" />
         </div>
 
         {email && (
@@ -73,7 +76,7 @@ export default function Sidebar() {
                   active ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src={icon} alt={label} className="w-5 h-5" />
+                <Image src={icon} alt={label} width={20} height={20} className="w-5 h-5" />
                 <span className="text-sm">{label}</span>
               </Link>
             )
@@ -86,7 +89,7 @@ export default function Sidebar() {
           onClick={handleLogout}
           className="flex items-center gap-3 p-2 rounded hover:bg-white/10 w-full"
         >
-          <img src="/exit-b.svg" alt="Cerrar sesión" className="w-5 h-5" />
+          <Image src="/exit-b.svg" alt="Cerrar sesión" width={20} height={20} className="w-5 h-5" />
           <span className="text-sm">Cerrar sesión</span>
         </button>
       </div>

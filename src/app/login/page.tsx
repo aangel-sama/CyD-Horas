@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -41,12 +42,12 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
         {/* Logo CyD */}
         <div className="pt-10 pb-6 flex justify-center">
-          <img src="/cyD-logo.svg" alt="CyD Ingeniería" className="h-14" />
+          <Image src="/cyD-logo.svg" alt="CyD Ingeniería" width={56} height={56} className="h-14" />
         </div>
         <div className="px-8 pb-8">
           {/* Icono candado */}
           <div className="flex justify-center mb-4">
-            <img src="/candado.svg" alt="Icono de candado" className="h-6" />
+            <Image src="/candado.svg" alt="Icono de candado" width={24} height={24} className="h-6" />
           </div>
           {/* Título y descripción */}
           <h1 className="text-center text-xl font-bold mb-2 text-black">
@@ -104,17 +105,9 @@ export default function LoginPage() {
                   className="absolute inset-y-0 right-3 flex items-center text-gray-500"
                 >
                   {showPassword ? (
-                    <img
-                      src="/eye-off.svg"
-                      alt="Ocultar contraseña"
-                      className="h-5"
-                    />
+                    <Image src="/eye-off.svg" alt="Ocultar contraseña" width={20} height={20} className="h-5" />
                   ) : (
-                    <img
-                      src="/eye.svg"
-                      alt="Mostrar contraseña"
-                      className="h-5"
-                    />
+                    <Image src="/eye.svg" alt="Mostrar contraseña" width={20} height={20} className="h-5" />
                   )}
                 </button>
               </div>

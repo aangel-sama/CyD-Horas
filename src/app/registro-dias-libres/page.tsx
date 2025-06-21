@@ -1,7 +1,7 @@
 'use client';
 
-import Sidebar from '../components/Sidebar';
-import CalendarioFecha from '../components/CalendarioFecha';
+import Sidebar from '../../components/Sidebar';
+import CalendarioFecha from '../../components/CalendarioFecha';
 import { registerVacation } from '../../lib/utils/registerVacation';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';

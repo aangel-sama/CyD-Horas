@@ -3,6 +3,7 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import Image from 'next/image'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -35,7 +36,7 @@ export default function ForgotPasswordPage() {
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
         {/* Logo CyD */}
         <div className="pt-10 pb-6 flex justify-center">
-          <img src="/cyD-logo.svg" alt="CyD Ingeniería" className="h-14" />
+          <Image src="/cyD-logo.svg" alt="CyD Ingeniería" width={56} height={56} className="h-14" />
         </div>
         <div className="px-8 pb-8">
           <h1 className="text-center text-xl font-bold mb-2 text-black">
