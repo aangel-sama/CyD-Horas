@@ -4,6 +4,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import Image from 'next/image'
+
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -90,7 +92,7 @@ export default function ResetPasswordPage() {
     <div className="flex min-h-screen bg-gray-50 items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
         <div className="pt-10 pb-6 flex justify-center">
-          <img src="/cyD-logo.svg" alt="CyD Ingeniería" className="h-14" />
+          <Image src="/cyD-logo.svg" alt="CyD Ingeniería" width={56} height={56} className="h-14" />
         </div>
         <div className="px-8 pb-8">
           <h2 className="text-center text-xl font-bold mb-4 text-black">

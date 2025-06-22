@@ -3,13 +3,22 @@
  * @param offsetSemanas Número de semanas a desplazar. 0 = semana actual, -1 = anterior, +1 = siguiente
  * @returns Arreglo de 5 fechas (lunes a viernes)
  */
-export function obtenerFechasSemana(offsetSemanas = 0): string[] {
-  const base = new Date(); // Fecha actual
-  base.setDate(base.getDate() + offsetSemanas * 7); // Desplazamiento de semanas
 
-  const dow = base.getDay(); // Día de la semana (domingo = 0)
-  const diff = base.getDate() - dow + (dow === 0 ? -6 : 1); // Calcular lunes
-  const lunes = new Date(base.setDate(diff));
+import { FERIADOS } from './feriados';
+
+export function esFeriado(fecha: string): boolean {
+  return FERIADOS.includes(fecha);
+}
+
+
+export function obtenerFechasSemana(offsetSemanas = 0): string[] {
+  const hoy = new Date();
+  const fechaBase = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + offsetSemanas * 7);
+
+  const diaSemana = fechaBase.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
+  const distanciaAlLunes = (diaSemana + 6) % 7; // 0 si es lunes, 1 si es martes, ..., 6 si es domingo
+  const lunes = new Date(fechaBase);
+  lunes.setDate(fechaBase.getDate() - distanciaAlLunes);
 
   const fechas: string[] = [];
   for (let i = 0; i < 5; i++) {
@@ -20,6 +29,7 @@ export function obtenerFechasSemana(offsetSemanas = 0): string[] {
 
   return fechas;
 }
+
 
 /**
  * Devuelve un texto formateado como "Semana del dd/mm al dd/mm"
@@ -35,3 +45,8 @@ export function formatoSemana(desdeISO: string): string {
 
   return `Semana del ${fmt(d)} al ${fmt(f)}`;
 }
+
+export function obtenerFechasHabilesSemana(offset = 0): string[] {
+  return obtenerFechasSemana(offset).filter(f => !esFeriado(f));
+}
+

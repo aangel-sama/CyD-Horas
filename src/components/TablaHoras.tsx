@@ -1,6 +1,8 @@
 'use client'; // Requiere modo cliente para poder manejar eventos como onChange
 
 import React from 'react';
+import { esFeriado } from '../lib/utils/feriados'; 
+import Image from 'next/image'
 
 // Definimos los props que este componente va a recibir desde el padre
 type TablaHorasProps = {
@@ -37,7 +39,7 @@ export default function TablaHoras({
       <div className="flex items-center justify-between bg-[#fff] px-6 pt-6">
         <h2 className="text-xl font-semibold text-[#212121]">Detalle de horas</h2>
         <div className="flex items-center gap-2 text-sm text-[#802528] font-medium">
-          <img src="/today-outline.svg" alt="Calendario" className="w-4 h-4" />
+          <Image src="/today-outline.svg" alt="Calendario" width={16} height={16} className="w-4 h-4" />
           <span>{fechasSemana.length > 0 ? `Semana del ${fechasSemana[0]}` : ''}</span>
         </div>
       </div>
@@ -75,9 +77,11 @@ export default function TablaHoras({
                     // 3. Si es día futuro en semana actual
                     disabled={
                       bloquear ||
+                      (fechasSemana[idx] && !isNaN(new Date(fechasSemana[idx]).getTime()) && esFeriado(new Date(fechasSemana[idx]))) ||
                       (bloqueoSemanaAnterior && estadoEnvio === 'Enviado') ||
                       (!bloqueoSemanaAnterior && idx + 1 > (new Date().getDay() || 7))
                     }
+
                     // Al cambiar el valor, actualiza la celda correspondiente
                     onChange={(e) =>
                       handleHoraChange(proyecto, idx, parseFloat(e.target.value) || 0)

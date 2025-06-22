@@ -1,9 +1,5 @@
 import { supabase } from '../supabaseClient';
 
-/* ──────────────────────────────────────
-   SERVICIO: Gestión de registros de horas
-────────────────────────────────────── */
-
 /**
  * Obtiene todos los proyectos asociados a un correo.
  */
