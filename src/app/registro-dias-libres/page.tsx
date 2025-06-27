@@ -53,8 +53,8 @@ export default function RegistroDiasLibres() {
       });
 
       setMensajeError('');
-      setMensajeExito('Vacaciones registradas exitosamente.');
-      setMotivo('Vacaciones');
+      setMensajeExito('Registro enviado exitosamente.');
+      setMotivo('');
       setFechaInicio(undefined);
       setFechaFin(undefined);
     } catch (error) {
@@ -67,22 +67,39 @@ export default function RegistroDiasLibres() {
     <div className="flex bg-[#ffffff] min-h-screen">
       <Sidebar />
       <main className="ml-64 flex-1 px-10 py-12 flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center px-4">
+        <div className="flex flex-col items-center w-full max-w-4xl">
           <h1 className="text-3xl font-bold text-[#212121] mb-8">Registro de días libres</h1>
 
+          {/* Mensajes abajo del título */}
           {mensajeError && (
-            <div className="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
+            <div className="relative w-full mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
+              <button
+                onClick={() => setMensajeError('')}
+                className="absolute top-2 right-2 text-red-700 hover:text-red-900 text-lg font-bold focus:outline-none"
+                aria-label="Cerrar"
+                type="button"
+              >
+                ×
+              </button>
               {mensajeError}
             </div>
           )}
 
           {mensajeExito && (
-            <div className="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
+            <div className="relative w-full mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
+              <button
+                onClick={() => setMensajeExito('')}
+                className="absolute top-2 right-2 text-green-700 hover:text-green-900 text-lg font-bold focus:outline-none"
+                aria-label="Cerrar"
+                type="button"
+              >
+                ×
+              </button>
               {mensajeExito}
             </div>
           )}
 
-          <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-26 w-full max-w-4xl">
+          <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-26 w-full">
             <div className="flex items-center gap-16">
               {/* Motivo */}
               <div className="flex flex-col gap-1">

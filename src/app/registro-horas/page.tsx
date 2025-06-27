@@ -9,7 +9,7 @@ import TablaHoras from '../../components/TablaHoras';
 import ResumenSemana from '../../components/ResumenSemana';
 
 // Utilidades para fechas (calcular semanas y formato)
-import { obtenerFechasSemana, formatoSemana, obtenerFechasHabilesSemana} from '../../lib/utils/fechas';
+import { obtenerFechasSemana, formatoSemana, esFeriado} from '../../lib/utils/fechas';
 
 // Funciones de servicio para Supabase
 import { obtenerProyectos, obtenerRegistros, insertarOActualizarRegistro } from './../../lib/service/registroService';
@@ -44,10 +44,7 @@ export default function RegistroHoras() {
   // Texto amigable que se muestra como rango de la semana
   const [, setTextoSemana] = useState('');
 
-
-
-  // Correo fijo para pruebas (esto debe cambiarse por el del usuario autenticado)
-  // const correo = 'malvear@cydingenieria.com'; //
+  // Correo de usuario autenticado
   const [correo, setCorreo] = useState<string | null>(null);
 
   // Mensajes de error y éxito para notificaciones
@@ -107,11 +104,26 @@ export default function RegistroHoras() {
       // Si hay borradores anteriores, retroceder a esa semana
       if (borradoresPasados.length > 0) {
         const fechaPendiente = borradoresPasados[0].fecha;
-        const offsetSemanas = Math.floor(
-          (new Date(lunesActual).getTime() - new Date(fechaPendiente).getTime()) /
-            (7 * 24 * 3600_000)
-        ) * -1;
-        fechasMostrar = obtenerFechasSemana(offsetSemanas);
+        // Calcula el lunes de la semana de fechaPendiente
+        const fecha = new Date(fechaPendiente);
+        const diaSemana = fecha.getDay(); // 0=domingo, 1=lunes, ..., 6=sábado
+        const distanciaAlLunes = (diaSemana + 6) % 7;
+        const lunesPendiente = new Date(fecha);
+        lunesPendiente.setDate(fecha.getDate() - distanciaAlLunes);
+
+        // Calcula el lunes actual
+        const hoy = new Date();
+        const diaSemanaActual = hoy.getDay();
+        const distanciaAlLunesActual = (diaSemanaActual + 6) % 7;
+        const lunesActual = new Date(hoy);
+        lunesActual.setDate(hoy.getDate() - distanciaAlLunesActual);
+
+        // Calcula el offset de semanas respecto al lunes actual
+        const diffSemanas = Math.round(
+          (lunesPendiente.getTime() - lunesActual.getTime()) / (7 * 24 * 3600_000)
+        );
+
+        fechasMostrar = obtenerFechasSemana(diffSemanas);
         bloquearAnterior = true;
       }
 
@@ -141,6 +153,7 @@ export default function RegistroHoras() {
         if (hayDatosPrev && hayBorradoresPrev) {
           fechasMostrar     = fechasPrev;
           bloquearAnterior  = true;
+          setMensajeError('Primero debes completar y enviar la semana anterior.');
         }
       }
 
@@ -253,24 +266,32 @@ export default function RegistroHoras() {
         <h1 className="text-3xl font-bold text-[#212121] mb-6">Registro de Horas</h1>
         {/* Mensajes de error y éxito */}
         {mensajeError && (
-          <div className="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
-            {mensajeError}
-          </div>
-        )}
+            <div className="relative mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
+              <button
+                onClick={() => setMensajeError('')}
+                className="absolute top-2 right-2 text-red-700 hover:text-red-900 text-lg font-bold focus:outline-none"
+                aria-label="Cerrar"
+                type="button"
+              >
+                ×
+              </button>
+              {mensajeError}
+            </div>
+          )}
 
-        {mensajeExito && (
-          <div className="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
-            {mensajeExito}
-          </div>
-        )}
-
-        {/* Texto de semana actual */}
-
-        {bloqueoSemanaAnterior && (
-          <div className="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">
-            Primero debes completar y <b>enviar</b> la semana anterior.
-          </div>
-        )}
+          {mensajeExito && (
+            <div className="relative mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
+              <button
+                onClick={() => setMensajeExito('')}
+                className="absolute top-2 right-2 text-green-700 hover:text-green-900 text-lg font-bold focus:outline-none"
+                aria-label="Cerrar"
+                type="button"
+              >
+                ×
+              </button>
+              {mensajeExito}
+            </div>
+          )}
 
         {/* Contadores de resumen */}
         <ResumenSemana
@@ -297,7 +318,7 @@ export default function RegistroHoras() {
 
         {/* Botones de acción */}
         <div className="flex justify-end w-full gap-4 mt-6">
-{/* BOTÓN GUARDAR BORRADOR */}
+        {/* BOTÓN GUARDAR BORRADOR */}
           <button
             onClick={() => {
               if (bloquear) {
@@ -331,15 +352,18 @@ export default function RegistroHoras() {
                 (s, p) => s + dias.reduce((s2, d) => s2 + (horas[p]?.[d] || 0), 0),
                 0
               );
-              const diasHabiles   = obtenerFechasHabilesSemana();
+              const diasHabiles = fechasSemana.filter(f => {
+                const d = new Date(f).getUTCDay();
+                return d >= 1 && d <= 5 && !esFeriado(f); // Lunes a viernes y no feriado
+              });
               const horasEsperadas = diasHabiles.reduce((t, f) => {
-                const d = new Date(f).getDay();
+                const d = new Date(f).getUTCDay();
                 return t + (d === 5 ? 6.5 : 9);
               }, 0);
 
               if (tot < horasEsperadas) {
                 setMensajeError(
-                  `Debes completar al menos ${horasEsperadas} h. Actualmente llevas ${tot.toFixed(1)}.`
+                  `Debes completar al menos ${horasEsperadas} h. Actualmente llevas ${tot.toFixed(1)} h.`
                 );
                 setMensajeExito('');
                 return;

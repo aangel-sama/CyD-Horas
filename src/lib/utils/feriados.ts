@@ -6,7 +6,6 @@ export const FERIADOS: string[] = [
   '2025-05-01', // Día del Trabajo (irrenunciable)
   '2025-05-21', // Día de las Glorias Navales
   '2025-06-20', // Día Nacional de los Pueblos Indígenas
-  '2025-06-29', // San Pedro y San Pablo / Elecciones Primarias
   '2025-07-16', // Día de la Virgen del Carmen
   '2025-08-15', // Asunción de la Virgen
   '2025-09-18', // Independencia Nacional (irrenunciable)

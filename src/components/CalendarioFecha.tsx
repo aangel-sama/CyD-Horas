@@ -16,6 +16,7 @@ type CalendarioFechaProps = {
 
 export default function CalendarioFecha({ date, onDateChange }: CalendarioFechaProps) {
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
+  const [open, setOpen] = React.useState(false);
 
   // Update selectedDate if the prop 'date' changes externally
   React.useEffect(() => {
@@ -29,14 +30,18 @@ export default function CalendarioFecha({ date, onDateChange }: CalendarioFechaP
   const handleConfirm = () => {
     if (selectedDate) {
       onDateChange(selectedDate);
+      setOpen(false);
     }
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {/* The button that triggers the popover, styled to resemble the input field */}
-        <button className="w-45 flex items-center gap-2 gap-2 border-white rounded px-4 py-2 text-sm bg-white shadow hover:bg-white ">
+        <button 
+          className="w-45 flex items-center gap-2 gap-2 border-white rounded px-4 py-2 text-sm bg-white shadow hover:bg-white "
+          onClick={() => setOpen(true)}
+        >
           <CalendarIcon className="w-4 h-4 text-[#802528]" />
           <span className={date ? 'text-[#76787A]' : 'text-[#76787A]'}>
           {date 
@@ -53,8 +58,7 @@ export default function CalendarioFecha({ date, onDateChange }: CalendarioFechaP
         className="p-0 z-50 border-none shadow-lg rounded-md max-w-[280px] max-h-[320px]"
         style={{ width: 'fit-content', maxHeight: 'auto', overflow: 'visible' }}
       >
-
-
+        {/* Calendar component for date selection */}
         <Calendar
           mode="single"
           selected={selectedDate}
