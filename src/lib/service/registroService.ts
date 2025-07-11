@@ -3,6 +3,27 @@ import { supabase } from '../supabaseClient';
 /**
  * Obtiene todos los proyectos asociados a un correo.
  */
+
+type MetaRow = { codigo: string; proyecto: string };
+
+export async function obtenerProyectoMetaMap(): Promise<Record<string,string>> {
+  const { data, error } = await supabase
+    .from('nombre_proyecto')
+    .select('codigo, proyecto');
+
+  if (error) {
+    console.error('Error cargando nombre_proyecto:', error);
+    return {};
+  }
+
+  const metas = (data ?? []) as MetaRow[];
+
+  return metas.reduce((map, { codigo, proyecto }) => {
+    map[codigo] = proyecto;
+    return map;
+  }, {} as Record<string, string>);
+}
+
 export const obtenerProyectos = async (correo: string): Promise<string[]> => {
   const { data, error } = await supabase
     .from('proyecto')

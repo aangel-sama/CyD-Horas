@@ -12,7 +12,7 @@ import ResumenSemana from '../../components/ResumenSemana';
 import { obtenerFechasSemana, formatoSemana, esFeriado} from '../../lib/utils/fechas';
 
 // Funciones de servicio para Supabase
-import { obtenerProyectos, obtenerRegistros, insertarOActualizarRegistro } from './../../lib/service/registroService';
+import { obtenerProyectos, obtenerRegistros, insertarOActualizarRegistro, obtenerProyectoMetaMap} from './../../lib/service/registroService';
 
 
 // Días de la semana en orden
@@ -25,6 +25,9 @@ const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
 export default function RegistroHoras() {
   // Lista de códigos de proyectos asociados al usuario
   const [proyectos, setProyectos] = useState<string[]>([]);
+
+  // Mapa de códigos de proyectos a nombres amigables
+  const [metaMap, setMetaMap]   = useState<Record<string,string>>({});
 
   // Matriz de horas por proyecto y día
   const [horas, setHoras] = useState<Record<string, Record<string, number>>>({});
@@ -64,8 +67,12 @@ export default function RegistroHoras() {
       } else {
         alert('No hay sesión activa.');
       } 
+
       const codigos = await obtenerProyectos(user?.email || '');
       setProyectos(codigos);
+
+      const map = await obtenerProyectoMetaMap();
+      setMetaMap(map);
 
       // 2. Inicializar matriz de horas en cero
       const h0: Record<string, Record<string, number>> = {};
@@ -300,9 +307,47 @@ export default function RegistroHoras() {
           estado={estadoEnvio}
         />
 
+        {estadoEnvio === 'Enviado' && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded mb-4 flex justify-between items-center">
+            <span>¿Te equivocaste al enviar? Puedes reiniciar la semana.</span>
+            <button
+              onClick={async () => {
+                const confirmacion = confirm('¿Estás seguro de que quieres reiniciar la semana? Esta acción eliminará los registros enviados de esta semana.');
+                if (!confirmacion) return;
+
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user?.email && fechasSemana.length > 0) {
+                  await supabase
+                    .from('registro_horas')
+                    .delete()
+                    .eq('correo', user.email)
+                    .in('fecha', fechasSemana);
+
+                  setMensajeExito('Semana reiniciada. Ahora puedes editar nuevamente.');
+                  setMensajeError('');
+                  setEstadoEnvio('Pendiente');
+                  setBloquear(false);
+
+                  // Reinicia horas a cero
+                  const h0: Record<string, Record<string, number>> = {};
+                  proyectos.forEach(p => {
+                    h0[p] = {};
+                    dias.forEach(d => (h0[p][d] = 0));
+                  });
+                  setHoras(h0);
+                }
+              }}
+              className="btn-outline"
+            >
+              Reiniciar semana
+            </button>
+          </div>
+        )}
+
         {/* Tabla de ingreso de horas */}
         <TablaHoras
           proyectos={proyectos}
+          metaMap={metaMap}
           horas={horas}
           dias={dias}
           fechasSemana={fechasSemana}
@@ -370,8 +415,8 @@ export default function RegistroHoras() {
               }
 
               // limpiar alertas anteriores
-              setMensajeError('');
-              setMensajeExito('');
+              //setMensajeError('');
+              //setMensajeExito('');
 
               persistir('Enviado');
               setMensajeExito('Semana enviada correctamente.');
