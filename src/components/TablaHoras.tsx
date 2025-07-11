@@ -1,4 +1,4 @@
-'use client'; // Requiere modo cliente para poder manejar eventos como onChange
+'use client';
 
 import React from 'react';
 import { esFeriado } from '../lib/utils/feriados'; 
@@ -6,7 +6,8 @@ import Image from 'next/image'
 
 // Definimos los props que este componente va a recibir desde el padre
 type TablaHorasProps = {
-  proyectos: string[];                                           // Lista de proyectos activos
+  proyectos: string[];                                           // Lista de proyectos 
+  metaMap: Record<string,string>;                                // Mapa de códigos de proyectos a nombres amigables
   dias: string[];                                                // Lista de días (Lunes a Viernes)
   horas: Record<string, Record<string, number>>;                 // Matriz de horas por proyecto y día
   fechasSemana: string[];                                        // Fechas de lunes a viernes de la semana visible
@@ -22,6 +23,7 @@ type TablaHorasProps = {
 // Componente funcional de la tabla
 export default function TablaHoras({
   proyectos,
+  metaMap,
   dias,
   horas,
   fechasSemana,
@@ -49,6 +51,7 @@ export default function TablaHoras({
         <thead className="table-header">
           <tr>
             <th className="p-4 text-center">Proyecto</th>
+            <th className="p-4 text-center">Nombre</th>
             {/* Encabezado con días */}
             {dias.map((dia) => (
               <th key={dia} className="p-4 text-center">{dia}</th>
@@ -62,7 +65,7 @@ export default function TablaHoras({
           {proyectos.map((proyecto) => (
             <tr key={proyecto} className="table-row border-b border-[#DCDDDE]">
               <td className="p-4 text-center font-medium text-[#374151]">{proyecto}</td>
-
+              <td className="p-4 text-center text-[#6B7280]">{metaMap[proyecto] ?? '-'}</td>
               {/* Celdas de cada día con input numérico */}
               {dias.map((dia, idx) => (
                 <td key={dia} className="p-2 text-center">
@@ -103,6 +106,7 @@ export default function TablaHoras({
         <tfoot>
           <tr className="bg-white text-[#212121] font-semibold">
             <td className="p-4 text-center">Total diario</td>
+            <td className="p-4 text-center"></td>
             {dias.map((_, i) => (
               <td key={i} className="p-4 text-center text-[#802528]">
                 {totalDia(i).toFixed(1)}
