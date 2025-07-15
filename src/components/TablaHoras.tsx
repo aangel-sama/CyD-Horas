@@ -1,26 +1,26 @@
 'use client';
 
 import React from 'react';
-import { esFeriado } from '../lib/utils/feriados'; 
-import Image from 'next/image'
+import { esFeriado } from '../lib/utils/feriados';
+import Image from 'next/image';
 
-// Definimos los props que este componente va a recibir desde el padre
 type TablaHorasProps = {
-  proyectos: string[];                                           // Lista de proyectos 
-  metaMap: Record<string,string>;                                // Mapa de códigos de proyectos a nombres amigables
-  dias: string[];                                                // Lista de días (Lunes a Viernes)
-  horas: Record<string, Record<string, number>>;                 // Matriz de horas por proyecto y día
-  fechasSemana: string[];                                        // Fechas de lunes a viernes de la semana visible
-  estadoEnvio: 'Pendiente' | 'Enviado';                          // Estado actual del registro
-  bloquear: boolean;                                             // Si ya fue enviado, se bloquean inputs
-  bloqueoSemanaAnterior: boolean;                                // Si se debe completar semana anterior
-  totalProyecto: (p: string) => number;                          // Función que calcula total de un proyecto
-  totalDia: (i: number) => number;                               // Función que calcula total por día
-  totalGeneral: () => number;                                    // Función que calcula total general de horas
-  handleHoraChange: (proyecto: string, idxDia: number, valor: number) => void; // Función para manejar cambios
+  proyectos: string[];
+  metaMap: Record<string, string>;
+  dias: string[];
+  horas: Record<string, Record<string, number>>;
+  fechasSemana: string[];
+  estadoEnvio: 'Pendiente' | 'Enviado';
+  bloquear: boolean;
+  totalProyecto: (p: string) => number;
+  totalDia: (i: number) => number;
+  totalGeneral: () => number;
+  handleHoraChange: (proyecto: string, idxDia: number, valor: number) => void;
+  textoSemana: string;
+  setOffsetSemana: React.Dispatch<React.SetStateAction<number>>;
+  offsetSemana: number;
 };
 
-// Componente funcional de la tabla
 export default function TablaHoras({
   proyectos,
   metaMap,
@@ -29,30 +29,56 @@ export default function TablaHoras({
   fechasSemana,
   estadoEnvio,
   bloquear,
-  bloqueoSemanaAnterior,
   totalProyecto,
   totalDia,
   totalGeneral,
   handleHoraChange,
+  textoSemana,
+  setOffsetSemana,
+  offsetSemana,
 }: TablaHorasProps) {
   return (
     <div className="w-full overflow-hidden rounded-2xl shadow">
-      {/* Encabezado de tabla con título y semana */}
+      {/* Encabezado */}
       <div className="flex items-center justify-between bg-[#fff] px-6 pt-6">
         <h2 className="text-xl font-semibold text-[#212121]">Detalle de horas</h2>
+
+        {/* Selector de semana */}
         <div className="flex items-center gap-2 text-sm text-[#802528] font-medium">
-          <Image src="/today-outline.svg" alt="Calendario" width={16} height={16} className="w-4 h-4" />
-          <span>{fechasSemana.length > 0 ? `Semana del ${fechasSemana[0]}` : ''}</span>
+          <button
+            onClick={() => setOffsetSemana(offsetSemana - 1)}
+            className="text-lg hover:text-[#a33838]"
+            aria-label="Semana anterior"
+          >
+            &lt;
+          </button>
+
+          <Image
+            src="/today-outline.svg"
+            alt="Calendario"
+            width={16}
+            height={16}
+            className="w-4 h-4"
+          />
+          <span>{textoSemana}</span>
+
+          <button
+            onClick={() => offsetSemana < 0 && setOffsetSemana(offsetSemana + 1)}
+            disabled={offsetSemana >= 0}
+            className={`text-lg hover:text-[#a33838] ${offsetSemana >= 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+            aria-label="Semana siguiente"
+          >
+            &gt;
+          </button>
         </div>
       </div>
 
-      {/* Tabla de ingreso de horas */}
+      {/* Tabla */}
       <table className="min-w-full bg-white">
         <thead className="table-header">
           <tr>
             <th className="p-4 text-center">Proyecto</th>
             <th className="p-4 text-center">Nombre</th>
-            {/* Encabezado con días */}
             {dias.map((dia) => (
               <th key={dia} className="p-4 text-center">{dia}</th>
             ))}
@@ -61,40 +87,37 @@ export default function TablaHoras({
         </thead>
 
         <tbody>
-          {/* Filas por proyecto */}
           {proyectos.map((proyecto) => (
             <tr key={proyecto} className="table-row border-b border-[#DCDDDE]">
               <td className="p-4 text-center font-medium text-[#374151]">{proyecto}</td>
               <td className="p-4 text-center text-[#6B7280]">{metaMap[proyecto] ?? '-'}</td>
-              {/* Celdas de cada día con input numérico */}
-              {dias.map((dia, idx) => (
-                <td key={dia} className="p-2 text-center">
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={horas[proyecto]?.[dia] || ''}
-                    // Reglas de bloqueo:
-                    // 1. Si fue enviado
-                    // 2. Si es semana anterior y ya está enviada
-                    // 3. Si es día futuro en semana actual
-                    disabled={
-                      bloquear ||
-                      (fechasSemana[idx] && !isNaN(new Date(fechasSemana[idx]).getTime()) && esFeriado(new Date(fechasSemana[idx]))) ||
-                      (bloqueoSemanaAnterior && estadoEnvio === 'Enviado') ||
-                      (!bloqueoSemanaAnterior && idx + 1 > (new Date().getDay() || 7))
-                    }
+              {dias.map((dia, idx) => {
+                const fecha = fechasSemana[idx];
+                const esFeriadoDia = Boolean(fecha && esFeriado(new Date(fecha)));
+                const isFuture    = Boolean(fecha && new Date(fecha) > new Date());
 
-                    // Al cambiar el valor, actualiza la celda correspondiente
-                    onChange={(e) =>
-                      handleHoraChange(proyecto, idx, parseFloat(e.target.value) || 0)
-                    }
-                    className="input-hora"
-                  />
-                </td>
-              ))}
 
-              {/* Total por proyecto */}
+                return (
+                  <td key={dia} className="p-2 text-center">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={horas[proyecto]?.[dia] || ''}
+                      disabled={
+                        bloquear ||
+                        esFeriadoDia ||
+                        (estadoEnvio === 'Enviado') ||
+                        (offsetSemana === 0 && isFuture)
+                      }
+                      onChange={(e) =>
+                        handleHoraChange(proyecto, idx, parseFloat(e.target.value) || 0)
+                      }
+                      className="input-hora"
+                    />
+                  </td>
+                );
+              })}
               <td className="p-4 text-center">
                 <span className="total-badge">{totalProyecto(proyecto).toFixed(1)}</span>
               </td>
@@ -102,7 +125,6 @@ export default function TablaHoras({
           ))}
         </tbody>
 
-        {/* Fila de totales por día y general */}
         <tfoot>
           <tr className="bg-white text-[#212121] font-semibold">
             <td className="p-4 text-center">Total diario</td>
