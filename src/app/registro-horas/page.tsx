@@ -39,7 +39,7 @@ export default function RegistroHoras() {
   const [bloquear, setBloquear] = useState(false);
 
   // Indica si se está mostrando una semana anterior no enviada
-  const [bloqueoSemanaAnterior, setBloqueoSemanaAnterior] = useState(false);
+  //const [bloqueoSemanaAnterior, setBloqueoSemanaAnterior] = useState(false);
 
   // Semana que se está mostrando (como array de fechas)
   const [fechasSemana, setFechasSemana] = useState<string[]>([]);
@@ -54,27 +54,30 @@ export default function RegistroHoras() {
   const [mensajeError, setMensajeError] = useState('');
   const [mensajeExito, setMensajeExito] = useState('');
 
+  // Offset de semanas para navegar entre semanas
+  // (0 = semana actual, -1 = semana anterior, etc.)
+  const [offsetSemana, setOffsetSemana] = useState(0);
+
+
   /* ───────────────────────────────
      Efecto de inicialización
   ─────────────────────────────── */
   useEffect(() => {
-    // Cuando se agregue la autenticación, se debe usar el correo del usuario autenticado
     const init = async () => {
-      // 1. Obtener proyectos del usuario
+      // 1) Obtener usuario
       const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email) {
-        setCorreo(user.email);
-      } else {
+      if (!user?.email) {
         alert('No hay sesión activa.');
-      } 
+        return;
+      }
+      setCorreo(user.email);
 
-      const codigos = await obtenerProyectos(user?.email || '');
+      // 2) Proyectos y metaMap
+      const codigos = await obtenerProyectos(user.email);
       setProyectos(codigos);
+      setMetaMap(await obtenerProyectoMetaMap());
 
-      const map = await obtenerProyectoMetaMap();
-      setMetaMap(map);
-
-      // 2. Inicializar matriz de horas en cero
+      // 3) Inicializar matriz h0
       const h0: Record<string, Record<string, number>> = {};
       codigos.forEach(p => {
         h0[p] = {};
@@ -82,100 +85,17 @@ export default function RegistroHoras() {
       });
       setHoras(h0);
 
-      // 3. Determinar si el usuario es nuevo (sin registros)
-      const { count: totalRegistros } = await supabase
-        .from('registro_horas')
-        .select('*', { count: 'exact', head: true })
-        .eq('correo', correo);
-      const usuarioNuevo = (totalRegistros || 0) === 0;
+      // 4) Fechas según offsetSemana
+      const fechas = obtenerFechasSemana(offsetSemana);
+      setFechasSemana(fechas);
+      setTextoSemana(formatoSemana(fechas[0]));
 
-      // 4. Calcular fechas clave
-      const fechasActual = obtenerFechasSemana(0);
-      const fechasPrev = obtenerFechasSemana(-1);
-      const lunesActual = fechasActual[0];
-
-      // 5. Verificar si hay borradores de semanas anteriores
-      const { data: todosLosBorradores } = await supabase
-        .from('registro_horas')
-        .select('fecha')
-        .eq('correo', correo)
-        .eq('estado', 'Borrador');
-      const borradoresPasados = (todosLosBorradores || []).filter(r =>
-        new Date(r.fecha) < new Date(lunesActual)
-      );
-
-      // Por defecto, mostrar la semana actual
-      let fechasMostrar = fechasActual;
-      let bloquearAnterior = false;
-
-      // Si hay borradores anteriores, retroceder a esa semana
-      if (borradoresPasados.length > 0) {
-        const fechaPendiente = borradoresPasados[0].fecha;
-        // Calcula el lunes de la semana de fechaPendiente
-        const fecha = new Date(fechaPendiente);
-        const diaSemana = fecha.getDay(); // 0=domingo, 1=lunes, ..., 6=sábado
-        const distanciaAlLunes = (diaSemana + 6) % 7;
-        const lunesPendiente = new Date(fecha);
-        lunesPendiente.setDate(fecha.getDate() - distanciaAlLunes);
-
-        // Calcula el lunes actual
-        const hoy = new Date();
-        const diaSemanaActual = hoy.getDay();
-        const distanciaAlLunesActual = (diaSemanaActual + 6) % 7;
-        const lunesActual = new Date(hoy);
-        lunesActual.setDate(hoy.getDate() - distanciaAlLunesActual);
-
-        // Calcula el offset de semanas respecto al lunes actual
-        const diffSemanas = Math.round(
-          (lunesPendiente.getTime() - lunesActual.getTime()) / (7 * 24 * 3600_000)
-        );
-
-        fechasMostrar = obtenerFechasSemana(diffSemanas);
-        bloquearAnterior = true;
-      }
-
-      // Si el usuario no es nuevo, verificar si tiene registros de la semana pasada sin enviar
-      // --------------- dentro de init() -----------------
-      if (!usuarioNuevo) {
-        // Traemos TODAS las filas (si existen) de la semana anterior
-        const { data: registrosPrev } = await supabase
-          .from('registro_horas')
-          .select('estado')
-          .eq('correo', correo)
-          .in('fecha', fechasPrev);
-
-        // ¿Hay, al menos, un registro?
-        const hayDatosPrev        = (registrosPrev?.length ?? 0) > 0;
-        // ¿Alguno quedó como Borrador?
-        const hayBorradoresPrev   = registrosPrev?.some(r => r.estado === 'Borrador') ?? false;
-
-        /*  ── DECISIÓN ───────────────────────────────
-            ┌──────────────┬──────────────┬───────────┐
-            │              │   Datos?     │  Estado   │ Resultado
-            ├──────────────┼──────────────┼───────────┤
-            │ Vacío        │ false        │  –        │ ✓  Semana actual
-            │ Todo Enviado │ true         │  Enviado  │ ✓  Semana actual
-            │ Algún Borra. │ true         │  Borrador │ ✗  Bloqueo (mostrar prev.)
-            └──────────────┴──────────────┴───────────┘ */
-        if (hayDatosPrev && hayBorradoresPrev) {
-          fechasMostrar     = fechasPrev;
-          bloquearAnterior  = true;
-          setMensajeError('Primero debes completar y enviar la semana anterior.');
-        }
-      }
-
-      // Aplicar la semana a mostrar y el bloqueo
-      setBloqueoSemanaAnterior(bloquearAnterior);
-      setFechasSemana(fechasMostrar);
-      setTextoSemana(formatoSemana(fechasMostrar[0]));
-
-      // 6. Cargar horas registradas (si existen)
-      const registrosSemana = await obtenerRegistros(user?.email || '', fechasMostrar);
-
+      // 5) Cargar registros de esa semana
+      const registrosSemana = await obtenerRegistros(user.email, fechas);
       if (registrosSemana.length > 0) {
         const hNew = { ...h0 };
         registrosSemana.forEach(r => {
-          const idx = fechasMostrar.indexOf(r.fecha);
+          const idx = fechas.indexOf(r.fecha);
           if (idx !== -1) {
             const diaNombre = dias[idx];
             hNew[r.proyecto][diaNombre] = r.horas;
@@ -183,25 +103,30 @@ export default function RegistroHoras() {
         });
         setHoras(hNew);
 
-        // Si algún registro está enviado, se bloquea edición
+        // Si algún registro está “Enviado”, bloqueo total
         if (registrosSemana.some(r => r.estado === 'Enviado')) {
           setEstadoEnvio('Enviado');
           setBloquear(true);
+        } else {
+          setEstadoEnvio('Pendiente');
+          setBloquear(false);
         }
+      } else {
+        // No hay registros: borrador limpio
+        setEstadoEnvio('Pendiente');
+        setBloquear(false);
       }
     };
 
     init();
-  }, [correo]);
-// Cuando se agregue la autenticación, se debe usar el correo del usuario autenticado
-//}, [correo]);
+  }, [offsetSemana]);
 
   /* ───────────────────────────────
      Función para manejar cambios en inputs
   ─────────────────────────────── */
   const handleHoraChange = (proyecto: string, idxDia: number, valor: number) => {
-    const hoyIdx = new Date().getDay() || 7;
-    if (!bloqueoSemanaAnterior && idxDia + 1 > hoyIdx) return;
+    const fechaDia = fechasSemana[idxDia];
+    if (new Date(fechaDia) > new Date()) return;
 
     const diaNombre = dias[idxDia];
     const limite = diaNombre === 'Viernes' ? 6.5 : 9;
@@ -223,11 +148,11 @@ export default function RegistroHoras() {
      Guardar o enviar registros
   ─────────────────────────────── */
   const persistir = async (estado: 'Borrador' | 'Enviado') => {
-    const hoyIdx = new Date().getDay() || 7;
 
     for (const p of proyectos) {
       for (let i = 0; i < dias.length; i++) {
-        if (estado === 'Borrador' && !bloqueoSemanaAnterior && i + 1 > hoyIdx) continue;
+        const fechaDia = fechasSemana[i];
+        if (estado === 'Borrador' && new Date(fechaDia) > new Date()) continue;
 
         const fecha = fechasSemana[i];
         const horasDia = horas[p][dias[i]] || 0;
@@ -248,7 +173,7 @@ export default function RegistroHoras() {
       setBloquear(true);
       setMensajeExito('Registro enviado correctamente.');
       setMensajeError('');
-      if (bloqueoSemanaAnterior) location.reload();
+      location.reload();
     } else {
       setEstadoEnvio('Pendiente');
       setBloquear(false);
@@ -348,16 +273,18 @@ export default function RegistroHoras() {
         <TablaHoras
           proyectos={proyectos}
           metaMap={metaMap}
-          horas={horas}
           dias={dias}
+          horas={horas}
           fechasSemana={fechasSemana}
           estadoEnvio={estadoEnvio}
           bloquear={bloquear}
-          bloqueoSemanaAnterior={bloqueoSemanaAnterior}
           totalProyecto={totalProyecto}
           totalDia={totalDia}
           totalGeneral={() => totalGeneral}
           handleHoraChange={handleHoraChange}
+          textoSemana={formatoSemana(fechasSemana[0])}
+          setOffsetSemana={setOffsetSemana}
+          offsetSemana={offsetSemana}
         />
 
 
@@ -413,10 +340,6 @@ export default function RegistroHoras() {
                 setMensajeExito('');
                 return;
               }
-
-              // limpiar alertas anteriores
-              //setMensajeError('');
-              //setMensajeExito('');
 
               persistir('Enviado');
               setMensajeExito('Semana enviada correctamente.');
