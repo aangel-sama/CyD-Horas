@@ -50,15 +50,15 @@ export default function RegistroDiasLibres() {
       .from('registro_horas')
       .select('fecha, proyecto, horas')
       .eq('correo', email)
-      .in('proyecto', ['GIN-2 Vacaciones', 'GIN-2 Licencias'])
+      .in('proyecto', ['GIN-2-Vacaciones', 'GIN-2-Licencias'])
       .order('fecha', { ascending: true });
     if (error) {
       console.error('Error cargando días libres:', error);
       return;
     }
     const rows = (data ?? []) as DiaRow[];
-    const vacFechas = rows.filter(r => r.proyecto === 'GIN-2 Vacaciones' && r.horas > 0).map(r => r.fecha);
-    const licFechas = rows.filter(r => r.proyecto === 'GIN-2 Licencias' && r.horas > 0).map(r => r.fecha);
+    const vacFechas = rows.filter(r => r.proyecto === 'GIN-2-Vacaciones' && r.horas > 0).map(r => r.fecha);
+    const licFechas = rows.filter(r => r.proyecto === 'GIN-2-Licencias' && r.horas > 0).map(r => r.fecha);
     const vacPeriodos = agruparFechas(vacFechas).map(p => ({ ...p, motivo: 'Vacaciones' as Motivo }));
     const licPeriodos = agruparFechas(licFechas).map(p => ({ ...p, motivo: 'Licencia médica' as Motivo }));
 
@@ -106,8 +106,8 @@ export default function RegistroDiasLibres() {
 
       // 2) Determinar proyecto clave
       const proyectoClave = motivo === 'Vacaciones'
-        ? 'GIN-2 Vacaciones'
-        : 'GIN-2 Licencias'
+        ? 'GIN-2-Vacaciones'
+        : 'GIN-2-Licencias'
 
       // 3) Calcular inicio de esta semana (lunes)
       const lunesActual = format(
