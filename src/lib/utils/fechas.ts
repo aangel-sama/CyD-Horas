@@ -13,22 +13,24 @@ export function esFeriado(fecha: string): boolean {
 
 export function obtenerFechasSemana(offsetSemanas = 0): string[] {
   const hoy = new Date();
-  const fechaBase = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + offsetSemanas * 7);
+  // Aplica offset de semanas
+  const fechaBase = new Date(hoy);
+  fechaBase.setDate(hoy.getDate() + offsetSemanas * 7);
 
-  const diaSemana = fechaBase.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
-  const distanciaAlLunes = (diaSemana + 6) % 7; // 0 si es lunes, 1 si es martes, ..., 6 si es domingo
+  // getDay(): 0=domingo, …, 6=sábado
+  // Queremos que lunes → distancia 0, martes → 1, … domingo → 6
+  const distanciaAlLunes = (fechaBase.getDay() + 6) % 7;
   const lunes = new Date(fechaBase);
   lunes.setDate(fechaBase.getDate() - distanciaAlLunes);
 
-  const fechas: string[] = [];
-  for (let i = 0; i < 5; i++) {
+  // Genera los 5 días laborales
+  return Array.from({ length: 5 }, (_, i) => {
     const d = new Date(lunes);
     d.setDate(lunes.getDate() + i);
-    fechas.push(d.toISOString().split('T')[0]); // YYYY-MM-DD
-  }
-
-  return fechas;
+    return d.toISOString().split('T')[0];
+  });
 }
+
 
 
 /**
