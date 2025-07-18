@@ -12,6 +12,7 @@ type TablaHorasProps = {
   fechasSemana: string[];
   estadoEnvio: 'Pendiente' | 'Enviado';
   bloquear: boolean;
+  prevWeekSent: boolean;
   totalProyecto: (p: string) => number;
   totalDia: (i: number) => number;
   totalGeneral: () => number;
@@ -29,6 +30,7 @@ export default function TablaHoras({
   fechasSemana,
   estadoEnvio,
   bloquear,
+  prevWeekSent,
   totalProyecto,
   totalDia,
   totalGeneral,
@@ -46,8 +48,11 @@ export default function TablaHoras({
         {/* Selector de semana */}
         <div className="flex items-center gap-2 text-sm text-[#802528] font-medium">
           <button
-            onClick={() => setOffsetSemana(offsetSemana - 1)}
-            className="text-lg hover:text-[#a33838]"
+            onClick={() => offsetSemana > -1 && !prevWeekSent && setOffsetSemana(offsetSemana - 1)}
+            disabled={offsetSemana <= -1 || prevWeekSent}
+            className={`text-lg hover:text-[#a33838] ${
+              (offsetSemana <= -1 || prevWeekSent) ? 'opacity-30 cursor-not-allowed' : ''
+            }`}
             aria-label="Semana anterior"
           >
             &lt;
