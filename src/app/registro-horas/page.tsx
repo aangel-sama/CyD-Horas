@@ -58,6 +58,9 @@ export default function RegistroHoras() {
   // (0 = semana actual, -1 = semana anterior, etc.)
   const [offsetSemana, setOffsetSemana] = useState(0);
 
+  // Estado para indicar si la semana anterior ya fue enviada
+  const [prevWeekSent, setPrevWeekSent] = useState(false);
+
 
   /* ───────────────────────────────
      Efecto de inicialización
@@ -111,10 +114,19 @@ export default function RegistroHoras() {
           setEstadoEnvio('Pendiente');
           setBloquear(false);
         }
+        } else {
+          // No hay registros: borrador limpio
+          setEstadoEnvio('Pendiente');
+          setBloquear(false);
+        }
+
+      // 6) Si estamos en la semana actual (offsetSemana=0), cargamos la pasada
+      if (offsetSemana === 0) {
+        const fechasPrev = obtenerFechasSemana(-1);
+        const prevRegs = await obtenerRegistros(user.email, fechasPrev);
+        setPrevWeekSent(prevRegs.some(r => r.estado === 'Enviado'));
       } else {
-        // No hay registros: borrador limpio
-        setEstadoEnvio('Pendiente');
-        setBloquear(false);
+        setPrevWeekSent(false);
       }
     };
 
@@ -156,6 +168,7 @@ export default function RegistroHoras() {
 
         const fecha = fechasSemana[i];
         const horasDia = horas[p][dias[i]] || 0;
+        
         const { data: { user } } = await supabase.auth.getUser();
         if (user?.email) {
           setCorreo(user.email);
@@ -278,6 +291,7 @@ export default function RegistroHoras() {
           fechasSemana={fechasSemana}
           estadoEnvio={estadoEnvio}
           bloquear={bloquear}
+          prevWeekSent={prevWeekSent}
           totalProyecto={totalProyecto}
           totalDia={totalDia}
           totalGeneral={() => totalGeneral}
