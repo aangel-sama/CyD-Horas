@@ -1,4 +1,6 @@
 /**
+ * Utilidades para manejar semanas y fechas laborales.
+ *
  * Devuelve un arreglo de fechas (string en formato YYYY-MM-DD) correspondiente a una semana laboral.
  * @param offsetSemanas Número de semanas a desplazar. 0 = semana actual, -1 = anterior, +1 = siguiente
  * @returns Arreglo de 5 fechas (lunes a viernes)
@@ -7,6 +9,7 @@
 import { FERIADOS } from './feriados';
 
 export function esFeriado(fecha: string): boolean {
+  // Comprueba si la fecha (ISO) se encuentra en la lista de feriados
   return FERIADOS.includes(fecha);
 }
 

@@ -1,3 +1,5 @@
+// Página de inicio de sesión.
+// Permite validar el correo corporativo y autenticarse vía Supabase.
 // src/app/login/page.tsx
 'use client'
 
@@ -8,27 +10,35 @@ import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()
+  // Campo de email del formulario
   const [email, setEmail] = useState('')
+  // Contraseña introducida por el usuario
   const [password, setPassword] = useState('')
+  // Controla si la contraseña se muestra en texto plano
   const [showPassword, setShowPassword] = useState(false)
+  // Mensaje de error en caso de fallo al iniciar sesión
   const [error, setError] = useState<string | null>(null)
+  // Indica si la petición está en curso
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    // Limpiamos mensajes anteriores y validamos el email
     setError(null)
 
-    // Validar dominio de correo
+    // Validar que el correo pertenezca al dominio corporativo
     if (!email.endsWith('@cydingenieria.com')) {
       setError('Solo se permite el inicio de sesión con correos @cydingenieria.com')
       return
     }
 
     setLoading(true)
+    // Intentamos iniciar sesión con Supabase
     const { error: err } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
+    // Finalizar indicador de carga
     setLoading(false)
     if (err) {
       setError(err.message)

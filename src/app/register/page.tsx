@@ -1,3 +1,5 @@
+// Página de registro de usuarios nuevos.
+// Valida el correo corporativo y envía confirmación vía Supabase.
 // src/app/register/page.tsx
 "use client";
 
@@ -8,14 +10,17 @@ import Image from 'next/image'
 
 export default function RegisterPage() {
   const router = useRouter();
+  // Datos del formulario de registro
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  // Estado y mensajes de error
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Validaciones básicas antes de registrar el usuario
     if (!email.endsWith("@cydingenieria.com")) {
       setError("Solo se permiten correos @cydingenieria.com");
       return;
@@ -24,6 +29,7 @@ export default function RegisterPage() {
       setError("Las contraseñas no coinciden");
       return;
     }
+    // Llamada a Supabase para crear el usuario
     setLoading(true);
     const { error: err } = await supabase.auth.signUp({
       email,
@@ -32,6 +38,7 @@ export default function RegisterPage() {
         emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/register/success`,
       },
     });
+    // Fin de la llamada
     setLoading(false);
     if (err) {
       setError(err.message);

@@ -1,3 +1,5 @@
+// Componente que muestra un selector de fecha personalizado
+// basado en un popover con un calendario.
 // CalendarioFecha.tsx
 
 'use client';
@@ -15,7 +17,9 @@ type CalendarioFechaProps = {
 };
 
 export default function CalendarioFecha({ date, onDateChange }: CalendarioFechaProps) {
+  // Fecha seleccionada internamente en el popover
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
+  // Estado de apertura del popover
   const [open, setOpen] = React.useState(false);
 
   // Update selectedDate if the prop 'date' changes externally

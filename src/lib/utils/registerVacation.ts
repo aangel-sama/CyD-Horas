@@ -1,3 +1,5 @@
+// Funciones para registrar vacaciones o licencias en la base de datos.
+// Valida el rango de fechas y actualiza la tabla de horas.
 // lib/utils/registerVacation.ts
 
 import { supabase } from '../supabaseClient';
@@ -25,6 +27,7 @@ export async function registerVacation({
   fechaInicio,
   fechaFin,
 }: RegisterVacationInput) {
+  // Registra un bloque de vacaciones o licencia médica para el usuario
   // Validación de rango
   if (fechaFin < fechaInicio) {
     throw new Error('La fecha de fin no puede ser anterior a la fecha de inicio.');
