@@ -75,7 +75,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-red-700 hover:bg-red-800 text-white font-semibold py-3 rounded-lg transition"
+              className="w-full bg-[#802528] hover:bg-[#6e1e1e] text-white font-semibold py-3 rounded-lg transition"
             >
               {loading ? 'Enviando...' : 'Enviar enlace'}
             </button>
@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
             ¿Recordaste tu contraseña?{' '}
             <a
               href="/login"
-              className="text-red-700 hover:underline font-medium"
+              className="text-[#802528] hover:underline font-medium"
             >
               Inicia sesión
             </a>
