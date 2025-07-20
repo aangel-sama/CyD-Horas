@@ -1,3 +1,5 @@
+// Página para ingresar una nueva contraseña.
+// Se accede desde el enlace enviado al correo de recuperación.
 "use client";
 
 // a
@@ -10,10 +12,13 @@ import Image from 'next/image'
 export default function ResetPasswordPage() {
   const router = useRouter();
 
+  // Tokens obtenidos desde el hash de la URL
   const [token, setToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  // Contraseña ingresada por el usuario
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  // Mensaje de error y estado de carga
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 

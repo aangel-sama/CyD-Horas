@@ -1,3 +1,5 @@
+// Página mostrada luego de confirmar el registro.
+// Ofrece un botón para volver al inicio de sesión.
 // src/app/register/success/page.tsx
 'use client'
 
@@ -5,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
 export default function RegisterSuccessPage() {
+  // Necesitamos el router para redirigir al usuario al login
   const router = useRouter()
 
   return (
@@ -25,6 +28,7 @@ export default function RegisterSuccessPage() {
         <div className="mb-5 text-sm text-gray-600">
           Tu cuenta ha sido confirmada correctamente.
         </div>
+        {/* Botón para volver a la pantalla de login */}
         <button
           onClick={() => router.push('/login')}
           className="w-full py-3 text-sm font-medium text-white bg-red-700 rounded-lg hover:bg-red-800 transition"

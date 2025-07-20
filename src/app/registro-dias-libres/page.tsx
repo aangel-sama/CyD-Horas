@@ -1,3 +1,5 @@
+// Página para registrar vacaciones o licencias médicas.
+// Permite seleccionar rangos de fechas y enviarlos a Supabase.
 'use client';
 
 import Sidebar from '../../components/Sidebar';
@@ -15,12 +17,16 @@ type Motivo = 'Vacaciones' | 'Licencia médica';
 interface PeriodoLibre { start: string; end: string; motivo: Motivo }
 
 export default function RegistroDiasLibres() {
+  // Datos del formulario: motivo y rango de fechas
   const [motivo, setMotivo] = useState<'Vacaciones' | 'Licencia médica'>('Vacaciones');
   const [fechaInicio, setFechaInicio] = useState<Date>();
   const [fechaFin, setFechaFin] = useState<Date>();
+  // Mensajes de feedback para el usuario
   const [mensajeError, setMensajeError] = useState('');
   const [mensajeExito, setMensajeExito] = useState('');
+  // Correo obtenido de la sesión actual
   const [correoUsuario, setCorreoUsuario] = useState('');
+  // Periodos ya registrados y vigentes
   const [registrosDiasLibres, setRegistrosDiasLibres] = useState<PeriodoLibre[]>([]);
 
   // Agrupa fechas contiguas en rangos start→end

@@ -1,3 +1,4 @@
+// Pequeños wrappers para los componentes de Radix Popover.
 "use client"
 
 import * as React from "react"
@@ -5,6 +6,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@/lib/utils"
 
+// Componente raíz del Popover
 function Popover({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Root>) {

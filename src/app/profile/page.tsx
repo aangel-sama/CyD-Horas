@@ -1,3 +1,5 @@
+// Página de perfil del usuario.
+// Permite cambiar la contraseña estando autenticado.
 'use client'
 
 import Sidebar from '../../components/Sidebar'
@@ -7,11 +9,15 @@ import { supabase } from '@/lib/supabaseClient'
 
 export default function ProfilePage() {
   const router = useRouter()
+  // Email obtenido de la sesión
   const [email, setEmail] = useState<string>('')
+  // Campos de cambio de contraseña
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  // Mensajes de error y éxito
   const [error, setError] = useState<string|null>(null)
   const [success, setSuccess] = useState<string|null>(null)
+  // Control de carga inicial
   const [loading, setLoading] = useState(true)
 
   // 1) Al montar, obtenemos la sesión y el email

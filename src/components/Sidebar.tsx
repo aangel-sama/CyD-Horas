@@ -1,3 +1,5 @@
+// Barra lateral de navegación mostrada en la mayoría de páginas.
+// Contiene enlaces a las distintas secciones y permite cerrar sesión.
 // src/components/Sidebar.tsx
 'use client'
 
@@ -13,7 +15,9 @@ const publicPaths = ['/login', '/register', '/register/success', '/forgot-passwo
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
+  // Correo de la sesión actual (si existe)
   const [email, setEmail] = useState<string | null>(null)
+  // Evita mostrar el sidebar mientras se verifica la sesión
   const [loading, setLoading] = useState(true)
 
   
