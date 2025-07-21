@@ -1,3 +1,4 @@
+// Calendario personalizado basado en react-day-picker.
 "use client"
 
 import * as React from "react"
@@ -15,6 +16,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 
 // ... (imports and other code)
 
+// Wrapper del componente DayPicker con estilos y traducciones personalizadas
 function Calendar({
   className,
   classNames,

@@ -1,3 +1,5 @@
+// Tarjetas superiores con el resumen de la semana.
+// Muestra totales de horas, proyectos activos y estado actual.
 'use client';
 
 import React from 'react';
@@ -15,6 +17,9 @@ interface ResumenSemanaProps {
  * - Estado del envío (Pendiente o Enviado)
  */
 export default function ResumenSemana({ totalGeneral, cantidadProyectos, estado }: ResumenSemanaProps) {
+  // totalGeneral: función que calcula todas las horas ingresadas
+  // cantidadProyectos: número de proyectos activos del usuario
+  // estado: indica si la semana está enviada o pendiente
   return (
     <div className="grid grid-cols-3 gap-6 w-full mb-8">
       {/* Total de horas */}

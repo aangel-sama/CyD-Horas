@@ -1,3 +1,5 @@
+// Listado de feriados nacionales utilizados para validar semanas.
+// Las fechas se expresan en formato ISO (YYYY-MM-DD).
 // YYYY-MM-DD de los feriados
 export const FERIADOS: string[] = [
   '2025-01-01', // Año Nuevo (irrenunciable)
@@ -20,6 +22,7 @@ export const FERIADOS: string[] = [
 
 //NO MODIFICAR
 export const esFeriado = (d: Date) => {
+  // Convierte la fecha a formato ISO y verifica si existe en la lista
   return FERIADOS.includes(d.toISOString().split('T')[0]);
 };
 

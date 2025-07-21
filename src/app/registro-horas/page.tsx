@@ -1,3 +1,5 @@
+// Página principal para registrar horas diarias de trabajo.
+// Carga proyectos y permite guardar o enviar la semana a Supabase.
 'use client';
  
 import { useEffect, useState } from 'react';
@@ -54,8 +56,8 @@ export default function RegistroHoras() {
   const [mensajeError, setMensajeError] = useState('');
   const [mensajeExito, setMensajeExito] = useState('');
 
-  // Offset de semanas para navegar entre semanas
-  // (0 = semana actual, -1 = semana anterior, etc.)
+  // Número de semanas que se ha desplazado el usuario respecto a la actual
+  // (0 = semana actual, -1 = anterior, 1 = siguiente, ...)
   const [offsetSemana, setOffsetSemana] = useState(0);
 
   // Estado para indicar si la semana anterior ya fue enviada
@@ -159,6 +161,8 @@ export default function RegistroHoras() {
   /* ───────────────────────────────
      Guardar o enviar registros
   ─────────────────────────────── */
+  // Guarda los datos ingresados en Supabase. Dependiendo del estado indicado se
+  // considerarán borradores o se marcarán como enviados.
   const persistir = async (estado: 'Borrador' | 'Enviado') => {
 
     for (const p of proyectos) {

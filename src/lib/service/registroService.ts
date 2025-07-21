@@ -1,3 +1,5 @@
+// Funciones de servicio para interactuar con la tabla registro_horas
+// y con la lista de proyectos en Supabase.
 import { supabase } from '../supabaseClient';
 
 /**

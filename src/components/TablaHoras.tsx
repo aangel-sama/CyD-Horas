@@ -1,3 +1,4 @@
+// Tabla editable donde se ingresan las horas por proyecto y día.
 'use client';
 
 import React from 'react';
@@ -39,6 +40,8 @@ export default function TablaHoras({
   setOffsetSemana,
   offsetSemana,
 }: TablaHorasProps) {
+  // Renderiza una tabla editable con los proyectos y los días de la semana.
+  // Permite modificar horas y navegar entre semanas mediante offsetSemana.
   return (
     <div className="w-full overflow-hidden rounded-2xl shadow">
       {/* Encabezado */}
