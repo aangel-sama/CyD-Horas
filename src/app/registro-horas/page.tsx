@@ -188,13 +188,11 @@ export default function RegistroHoras() {
     if (estado === 'Enviado') {
       setEstadoEnvio('Enviado');
       setBloquear(true);
-      setMensajeExito('Registro enviado correctamente.');
       setMensajeError('');
       location.reload();
     } else {
       setEstadoEnvio('Pendiente');
       setBloquear(false);
-      setMensajeExito('Borrador guardado correctamente.');
     }
   };
 
@@ -322,6 +320,7 @@ export default function RegistroHoras() {
               setMensajeExito('');
 
               persistir('Borrador');
+              setMensajeExito('Borrador guardado correctamente.');
             }}
             className={`btn-outline ${bloquear ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
@@ -341,14 +340,12 @@ export default function RegistroHoras() {
                 (s, p) => s + dias.reduce((s2, d) => s2 + (horas[p]?.[d] || 0), 0),
                 0
               );
-              const diasHabiles = fechasSemana.filter(f => {
-                const d = new Date(f).getDay();
-                return d >= 1 && d <= 5 && !esFeriado(f); // Lunes a viernes y no feriado
-              });
-              const horasEsperadas = diasHabiles.reduce((t, f) => {
-                const d = new Date(f).getDay();
-                return t + (d === 5 ? 6.5 : 9);
+
+              const horasEsperadas = fechasSemana.reduce((t, f, idx) => {
+                if (esFeriado(f)) return t;
+                return t + (idx === 4 ? 6.5 : 9); // Viernes es el índice 4
               }, 0);
+
 
               if (tot < horasEsperadas) {
                 setMensajeError(
