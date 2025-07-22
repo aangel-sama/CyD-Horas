@@ -322,7 +322,6 @@ export default function RegistroHoras() {
               setMensajeExito('');
 
               persistir('Borrador');
-              setMensajeExito('Borrador guardado.');
             }}
             className={`btn-outline ${bloquear ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
@@ -343,11 +342,11 @@ export default function RegistroHoras() {
                 0
               );
               const diasHabiles = fechasSemana.filter(f => {
-                const d = new Date(f).getUTCDay();
+                const d = new Date(f).getDay();
                 return d >= 1 && d <= 5 && !esFeriado(f); // Lunes a viernes y no feriado
               });
               const horasEsperadas = diasHabiles.reduce((t, f) => {
-                const d = new Date(f).getUTCDay();
+                const d = new Date(f).getDay();
                 return t + (d === 5 ? 6.5 : 9);
               }, 0);
 
