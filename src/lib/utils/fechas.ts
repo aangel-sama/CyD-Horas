@@ -10,26 +10,31 @@ export function esFeriado(fecha: string): boolean {
   return FERIADOS.includes(fecha);
 }
 
-
 export function obtenerFechasSemana(offsetSemanas = 0): string[] {
-  const hoy = new Date();
-  // Aplica offset de semanas
-  const fechaBase = new Date(hoy);
-  fechaBase.setDate(hoy.getDate() + offsetSemanas * 7);
+  const hoyLocal = new Date(); // Fecha local actual
 
-  // getDay(): 0=domingo, …, 6=sábado
-  // Queremos que lunes → distancia 0, martes → 1, … domingo → 6
+  // Forzar la hora a mediodía para evitar problemas con UTC
+  hoyLocal.setHours(12, 0, 0, 0);
+
+  // Aplica el offset de semanas
+  const fechaBase = new Date(hoyLocal);
+  fechaBase.setDate(hoyLocal.getDate() + offsetSemanas * 7);
+
+  // Calcular el lunes de esa semana
   const distanciaAlLunes = (fechaBase.getDay() + 6) % 7;
   const lunes = new Date(fechaBase);
   lunes.setDate(fechaBase.getDate() - distanciaAlLunes);
 
-  // Genera los 5 días laborales
+  // Generar 5 días desde el lunes
   return Array.from({ length: 5 }, (_, i) => {
     const d = new Date(lunes);
     d.setDate(lunes.getDate() + i);
-    return d.toISOString().split('T')[0];
+    d.setHours(12); // Aseguramos que esté al mediodía local
+    return d.toISOString().split('T')[0]; // yyyy-mm-dd
   });
 }
+
+
 
 
 

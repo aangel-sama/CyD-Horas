@@ -9,7 +9,7 @@ import TablaHoras from '../../components/TablaHoras';
 import ResumenSemana from '../../components/ResumenSemana';
 
 // Utilidades para fechas (calcular semanas y formato)
-import { obtenerFechasSemana, formatoSemana, esFeriado} from '../../lib/utils/fechas';
+import { obtenerFechasSemana, esFeriado} from '../../lib/utils/fechas';
 
 // Funciones de servicio para Supabase
 import { obtenerProyectos, obtenerRegistros, insertarOActualizarRegistro, obtenerProyectoMetaMap} from './../../lib/service/registroService';
@@ -45,7 +45,7 @@ export default function RegistroHoras() {
   const [fechasSemana, setFechasSemana] = useState<string[]>([]);
 
   // Texto amigable que se muestra como rango de la semana
-  const [, setTextoSemana] = useState('');
+  const [textoSemana, setTextoSemana] = useState('');
 
   // Correo de usuario autenticado
   const [correo, setCorreo] = useState<string | null>(null);
@@ -91,7 +91,16 @@ export default function RegistroHoras() {
       // 4) Fechas según offsetSemana
       const fechas = obtenerFechasSemana(offsetSemana);
       setFechasSemana(fechas);
-      setTextoSemana(formatoSemana(fechas[0]));
+
+      function formatearFecha(fechaISO: string) {
+        const fecha = new Date(fechaISO + 'T03:00:00'); // fuerza horario chileno
+        const dia = fecha.getDate().toString().padStart(2, '0');
+        const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+        return `${dia}/${mes}`;
+      }
+
+      const texto = `Semana del ${formatearFecha(fechas[0])} al ${formatearFecha(fechas[4])}`;
+      setTextoSemana(texto);
 
       // 5) Cargar registros de esa semana
       const registrosSemana = await obtenerRegistros(user.email, fechas);
@@ -184,11 +193,13 @@ export default function RegistroHoras() {
     if (estado === 'Enviado') {
       setEstadoEnvio('Enviado');
       setBloquear(true);
+      setMensajeExito('Registro enviado correctamente.');
       setMensajeError('');
       location.reload();
     } else {
       setEstadoEnvio('Pendiente');
       setBloquear(false);
+      setMensajeExito('Borrador guardado correctamente.');
     }
   };
 
@@ -294,7 +305,7 @@ export default function RegistroHoras() {
           totalDia={totalDia}
           totalGeneral={() => totalGeneral}
           handleHoraChange={handleHoraChange}
-          textoSemana={formatoSemana(fechasSemana[0])}
+          textoSemana={textoSemana}
           setOffsetSemana={setOffsetSemana}
           offsetSemana={offsetSemana}
         />
@@ -316,7 +327,7 @@ export default function RegistroHoras() {
               setMensajeExito('');
 
               persistir('Borrador');
-              setMensajeExito('Borrador guardado correctamente.');
+              setMensajeExito('Borrador guardado.');
             }}
             className={`btn-outline ${bloquear ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
@@ -336,10 +347,9 @@ export default function RegistroHoras() {
                 (s, p) => s + dias.reduce((s2, d) => s2 + (horas[p]?.[d] || 0), 0),
                 0
               );
-
               const horasEsperadas = fechasSemana.reduce((t, f, idx) => {
                 if (esFeriado(f)) return t;
-                return t + (idx === 4 ? 6.5 : 9); // Viernes es el índice 4
+                return t + (idx === 4 ? 6.5 : 9); // viernes es el índice 4
               }, 0);
 
 
